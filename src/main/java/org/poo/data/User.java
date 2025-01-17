@@ -1,5 +1,7 @@
 package org.poo.data;
 
+import org.poo.servicePlan.*;
+
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ public class User {
     private LocalDate birthDate;
     private String occupation;
     private List<Account> accounts = new ArrayList<>();
+    private TransactionService transactionService; // Decorator for cashback and commission logic
 
     // Constructor
     public User(final String firstName, final String lastName, final String email, final LocalDate birthDate, final String occupation) {
@@ -20,6 +23,11 @@ public class User {
         this.email = email;
         this.birthDate = birthDate;
         this.occupation = occupation;
+
+        // Default plan based on occupation
+        this.transactionService = occupation.equalsIgnoreCase("student")
+                ? new StudentPlanDecorator(new BaseTransactionService())
+                : new StandardPlanDecorator(new BaseTransactionService());
     }
 
     /**
@@ -105,5 +113,61 @@ public class User {
             }
         }
         throw new IllegalArgumentException("Account not found.");
+    }
+
+    /**
+     * Applies cashback based on the current user's plan.
+     * @param totalSpending - total spending for cashback calculation
+     * @param transactionAmount - the amount of the transaction
+     * @return - the cashback amount
+     */
+    public double applyCashback(double totalSpending, double transactionAmount) {
+        return transactionService.applyCashback(totalSpending, transactionAmount);
+    }
+
+    /**
+     * Applies commission based on the current user's plan.
+     * @param transactionAmount - the amount of the transaction
+     * @return - the commission amount
+     */
+    public double applyCommission(double transactionAmount) {
+        return transactionService.applyCommission(transactionAmount);
+    }
+
+    /**
+     * Upgrades the user's plan to a new plan.
+     * @param newPlanType - the new plan type
+     */
+    public String upgradePlan(String newPlanType) {
+        String normalizedCurrentPlan = getCurrentPlanName().toLowerCase();
+        newPlanType = newPlanType.toLowerCase();
+
+        // Check if the user is already on the new plan
+        if (normalizedCurrentPlan.equals(newPlanType)) {
+            return "The user already has the " + newPlanType + " plan.";
+        }
+
+        // Prevent downgrades
+        if ((normalizedCurrentPlan.equals("gold") && !newPlanType.equals("gold"))
+                || (normalizedCurrentPlan.equals("silver") && newPlanType.equals("standard"))) {
+            return "You cannot downgrade your plan.";
+        }
+
+        // Apply upgrade
+        switch (newPlanType) {
+            case "silver" -> this.transactionService = new SilverPlanDecorator(transactionService);
+            case "gold" -> this.transactionService = new GoldPlanDecorator(transactionService);
+            default -> { return "Invalid plan type: " + newPlanType; }
+        }
+        return "Upgrade successful to " + newPlanType + " plan.";
+    }
+
+
+    /**
+     * Returns the name of the current plan.
+     * @return - the plan name
+     */
+    public String getCurrentPlanName() {
+        return transactionService.getClass().getSimpleName().replace("PlanDecorator", "");
     }
 }

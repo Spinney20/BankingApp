@@ -154,6 +154,12 @@ public class PrintTransactions implements Command {
                         InfoOperation infoOperation = (InfoOperation) operation;
                         operationNode.put("description", infoOperation.getDescription());
                         break;
+                    case "upgradePlan":
+                        UpgradePlanOperation upgradePlanOperation = (UpgradePlanOperation) operation;
+                        operationNode.put("accountIBAN", upgradePlanOperation.getAccountIBAN());
+                        operationNode.put("newPlanType", upgradePlanOperation.getNewPlanType());
+                        operationNode.put("description", "Upgrade plan");
+                        break;
                     default:
                         break;
                 }
