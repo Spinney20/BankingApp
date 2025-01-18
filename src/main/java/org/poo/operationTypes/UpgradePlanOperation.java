@@ -14,7 +14,6 @@ public class UpgradePlanOperation extends Operation {
      * @param timestamp    The time of the operation
      * @param accountIBAN  The IBAN of the account being upgraded
      * @param newPlanType  The new plan type
-     * @param fee          The fee for the upgrade
      * @param currency     The currency of the fee
      */
     public UpgradePlanOperation(final int timestamp, final String accountIBAN,

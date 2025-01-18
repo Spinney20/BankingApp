@@ -18,27 +18,18 @@ public class SendMoneyCommand implements Command {
         this.exchangeRateManager = exchangeRateManager;
     }
 
-    /***
-     * Handling the send money command
-     * I search for the both accounts from and to
-     * Then i check if the from has enough money and if not
-     * adding a fail operation
-     * If its ok I add operations for both the receiver and sender
-     * And perform the transactions by adding to the receiver and
-     * removing from the sender the amount of course exchenged to the
-     * correct currencies
-     * @param users - list of users
-     * @param command - the command to be executed
-     */
     @Override
     public void execute(final List<User> users, final CommandInput command) {
         Account fromAccount = null;
         Account toAccount = null;
+        User senderUser = null;
 
+        // Find accounts and sender user
         for (User user : users) {
             for (Account account : user.getAccounts()) {
                 if (account.getIban().equals(command.getAccount())) {
                     fromAccount = account;
+                    senderUser = user;
                 }
                 if (account.getIban().equals(command.getReceiver())) {
                     toAccount = account;
@@ -46,44 +37,79 @@ public class SendMoneyCommand implements Command {
             }
         }
 
-        if (fromAccount != null && toAccount != null) {
-            if (fromAccount.getBalance() < command.getAmount()) {
-                FailOperation insufficientFundsOperation = new FailOperation(
-                        command.getTimestamp(),
-                        "Insufficient funds"
-                );
-                fromAccount.addOperation(insufficientFundsOperation);
-                return;
-            }
-            double exchangeRate = exchangeRateManager.
-                    getExchangeRate(fromAccount.getCurrency(), toAccount.getCurrency());
-            double convertedAmount = command.getAmount() * exchangeRate;
-
-            fromAccount.removeFunds(command.getAmount());
-            toAccount.addFunds(convertedAmount);
-
-            TransactionOperation senderTransaction = new TransactionOperation(
-                    command.getTimestamp(),
-                    command.getDescription(),
-                    fromAccount.getIban(),
-                    toAccount.getIban(),
-                    command.getAmount(),
-                    fromAccount.getCurrency(),
-                    "sent"
-            );
-
-            TransactionOperation receiverTransaction = new TransactionOperation(
-                    command.getTimestamp(),
-                    command.getDescription(),
-                    fromAccount.getIban(),
-                    toAccount.getIban(),
-                    convertedAmount,
-                    toAccount.getCurrency(),
-                    "received"
-            );
-
-            fromAccount.addOperation(senderTransaction);
-            toAccount.addOperation(receiverTransaction);
+        if (fromAccount == null || toAccount == null) {
+            return; // Accounts not found; no further action
         }
+
+        // Convert the amount to the receiver's currency
+        double exchangeRate = exchangeRateManager.
+                getExchangeRate(fromAccount.getCurrency(), toAccount.getCurrency());
+        double convertedAmount = command.getAmount() * exchangeRate;
+
+        // Convert the transaction amount to RON for commission calculation
+        double transactionAmountInRON = convertedAmount; // Default to converted amount
+        if (!toAccount.getCurrency().equals("RON")) {
+            double reverseExchangeRate = exchangeRateManager.getExchangeRate(toAccount.getCurrency(), "RON");
+            if (reverseExchangeRate != -1) {
+                transactionAmountInRON = convertedAmount * reverseExchangeRate; // Convert to RON
+            }
+        }
+
+        // Calculate commission based on the amount in RON
+        double commission = senderUser.applyCommission(transactionAmountInRON);
+
+        // Convert commission back to the sender's account currency
+        double commissionInSenderCurrency = commission;
+        if (!fromAccount.getCurrency().equalsIgnoreCase("RON")) {
+            double reverseExchangeRate = exchangeRateManager.getExchangeRate("RON", fromAccount.getCurrency());
+            if (reverseExchangeRate != -1) {
+                commissionInSenderCurrency = commission * reverseExchangeRate;
+            } else {
+                commissionInSenderCurrency = 0.0; // If exchange rate is not available, treat commission as 0
+            }
+        }
+
+        // Total amount to deduct (transaction + converted commission)
+        double totalAmountToDeduct = command.getAmount() + commissionInSenderCurrency;
+
+        // Check for sufficient funds
+        if (fromAccount.getBalance() < totalAmountToDeduct) {
+            FailOperation insufficientFundsOperation = new FailOperation(
+                    command.getTimestamp(),
+                    "Insufficient funds"
+            );
+            fromAccount.addOperation(insufficientFundsOperation);
+            return;
+        }
+
+        // Deduct funds from sender and add funds to receiver
+        fromAccount.removeFunds(totalAmountToDeduct);
+        toAccount.addFunds(convertedAmount);
+
+        // Create sender transaction operation with commission
+        TransactionOperation senderTransaction = new TransactionOperation(
+                command.getTimestamp(),
+                command.getDescription() ,
+                fromAccount.getIban(),
+                toAccount.getIban(),
+                command.getAmount(),
+                fromAccount.getCurrency(),
+                "sent"
+        );
+
+        // Create receiver transaction operation
+        TransactionOperation receiverTransaction = new TransactionOperation(
+                command.getTimestamp(),
+                command.getDescription(),
+                fromAccount.getIban(),
+                toAccount.getIban(),
+                convertedAmount,
+                toAccount.getCurrency(),
+                "received"
+        );
+
+        // Add operations to accounts
+        fromAccount.addOperation(senderTransaction);
+        toAccount.addOperation(receiverTransaction);
     }
 }

@@ -83,9 +83,6 @@ public class UpgradePlanCommand implements Command {
                 targetAccount.getCurrency()
         );
         targetAccount.addOperation(upgradeOperation);
-
-        // Log success
-        System.out.println("{\"description\": \"Upgrade plan\", \"timestamp\": " + command.getTimestamp() + "}");
     }
 
     /**
