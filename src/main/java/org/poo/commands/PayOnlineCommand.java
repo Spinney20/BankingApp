@@ -17,7 +17,6 @@ import org.poo.operationTypes.CardPaymentOperation;
 import org.poo.operationTypes.CreateCardOperation;
 import org.poo.operationTypes.DeleteCardOperation;
 import org.poo.operationTypes.FailOperation;
-import org.poo.operationTypes.InfoOperation;
 
 import java.util.List;
 
@@ -65,26 +64,30 @@ public class PayOnlineCommand implements Command {
                         break;
                     }
 
-                    // Convert the amount if currencies are different
-                    double convertedAmount = command.getAmount();
-                    if (!account.getCurrency().equals(command.getCurrency())) {
-                        double exchangeRate = exchangeRateManager.getExchangeRate(
+                    // Convert the amount to RON for commission calculation
+                    double amountInRON = command.getAmount();
+                    if (!command.getCurrency().equalsIgnoreCase("RON")) {
+                        double exchangeRateToRON = exchangeRateManager.getExchangeRate(
                                 command.getCurrency(),
-                                account.getCurrency()
+                                "RON"
                         );
 
-                        if (exchangeRate != -1) {
-                            convertedAmount *= exchangeRate;
+                        if (exchangeRateToRON != -1) {
+                            amountInRON = command.getAmount() * exchangeRateToRON; // Convert amount to RON
                         } else {
-                            // If exchange rate not found
-                            break;
+                            FailOperation failOperation = new FailOperation(
+                                    command.getTimestamp(),
+                                    "Exchange rate not available for conversion to RON"
+                            );
+                            account.addOperation(failOperation);
+                            return;
                         }
                     }
 
                     // Calculate commission in RON
-                    double commissionInRON = payingUser.applyCommission(convertedAmount);
+                    double commissionInRON = payingUser.applyCommission(amountInRON);
 
-                    // Convert commission back to account's currency
+                    // Convert the commission back to the account's currency
                     double commissionInAccountCurrency = commissionInRON;
                     if (!account.getCurrency().equalsIgnoreCase("RON")) {
                         double exchangeRateToAccountCurrency = exchangeRateManager.getExchangeRate(
@@ -93,19 +96,37 @@ public class PayOnlineCommand implements Command {
                         );
 
                         if (exchangeRateToAccountCurrency != -1) {
-                            commissionInAccountCurrency = commissionInRON * exchangeRateToAccountCurrency;
+                            commissionInAccountCurrency = commissionInRON * exchangeRateToAccountCurrency; // Convert back to account currency
                         } else {
                             FailOperation failOperation = new FailOperation(
                                     command.getTimestamp(),
-                                    "Exchange rate not available for commission"
+                                    "Exchange rate not available for commission conversion"
                             );
                             account.addOperation(failOperation);
                             return;
                         }
                     }
 
-                    // Total amount to deduct (amount + commission)
-                    double totalAmountToDeduct = convertedAmount + commissionInAccountCurrency;
+                    double amountInAccountCurrency = command.getAmount();
+                    if (!command.getCurrency().equalsIgnoreCase(account.getCurrency())) {
+                        double exchangeRateToAccountCurrency = exchangeRateManager.getExchangeRate(
+                                command.getCurrency(),
+                                account.getCurrency()
+                        );
+
+                        if (exchangeRateToAccountCurrency != -1) {
+                            amountInAccountCurrency = command.getAmount() * exchangeRateToAccountCurrency; // Convert amount to account currency
+                        } else {
+                            FailOperation failOperation = new FailOperation(
+                                    command.getTimestamp(),
+                                    "Exchange rate not available for amount conversion"
+                            );
+                            account.addOperation(failOperation);
+                            return;
+                        }
+                    }
+
+                    double totalAmountToDeduct = amountInAccountCurrency + commissionInAccountCurrency;
 
                     // 1. Check for insufficient funds
                     if (account.getBalance() < totalAmountToDeduct) {
@@ -179,20 +200,22 @@ public class PayOnlineCommand implements Command {
                     }
 
                     // Apply cashback and perform the payment
-                    double finalAmount = convertedAmount - cashback + commissionInAccountCurrency;
+                    double finalAmount = totalAmountToDeduct - cashback;
                     account.removeFunds(finalAmount);
 
                     // Add payment operation
-                    CardPaymentOperation paymentOperation = new CardPaymentOperation(
-                            command.getTimestamp(),
-                            account.getIban(),
-                            command.getCardNumber(),
-                            command.getCommerciant(),
-                            finalAmount + cashback - commissionInAccountCurrency,
-                            account.getCurrency(),
-                            "Card payment"
-                    );
-                    account.addOperation(paymentOperation);
+                    if (finalAmount > 0) {
+                        CardPaymentOperation paymentOperation = new CardPaymentOperation(
+                                command.getTimestamp(),
+                                account.getIban(),
+                                command.getCardNumber(),
+                                command.getCommerciant(),
+                                finalAmount + cashback - commissionInAccountCurrency,
+                                account.getCurrency(),
+                                "Card payment"
+                        );
+                        account.addOperation(paymentOperation);
+                    }
 
                     // One-time card logic
                     if (card.getCardType().equals("OneTime")) {

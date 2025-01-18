@@ -160,6 +160,12 @@ public class PrintTransactions implements Command {
                         operationNode.put("newPlanType", upgradePlanOperation.getNewPlanType());
                         operationNode.put("description", "Upgrade plan");
                         break;
+                    case "cashWithdrawal":
+                        CashWithdrawalOperation cashWithdrawalOperation =
+                                (CashWithdrawalOperation) operation;
+                        operationNode.put("amount", cashWithdrawalOperation.getAmount());
+                        operationNode.put("description", cashWithdrawalOperation.getDescription());
+                        break;
                     default:
                         break;
                 }

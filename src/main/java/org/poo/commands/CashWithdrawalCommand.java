@@ -9,6 +9,7 @@ import org.poo.data.Account;
 import org.poo.data.Card;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
+import org.poo.operationTypes.CashWithdrawalOperation;
 import org.poo.operationTypes.FailOperation;
 import org.poo.operationTypes.InfoOperation;
 
@@ -103,12 +104,13 @@ public class CashWithdrawalCommand implements Command {
         linkedAccount.removeFunds(totalAmountInAccountCurrency);
 
         // Add cash withdrawal operation to the account
-        InfoOperation withdrawalOperation = new InfoOperation(
+        CashWithdrawalOperation withdrawalOperation = new CashWithdrawalOperation(
                 command.getTimestamp(),
-                "Cash withdrawal of " + String.format("%.2f", withdrawalAmountRON) + " RON (Commission: " +
-                        String.format("%.2f", commissionRON) + " RON) from " + location
+                withdrawalAmountRON, // Amount withdrawn
+                "Cash withdrawal of " + String.format("%.1f", withdrawalAmountRON)
         );
         linkedAccount.addOperation(withdrawalOperation);
+
     }
 
     /**

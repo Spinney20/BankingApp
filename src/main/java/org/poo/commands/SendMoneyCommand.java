@@ -1,5 +1,8 @@
 package org.poo.commands;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.commandPattern.Command;
 import org.poo.currencyExchange.ExchangeRateManager;
 import org.poo.data.Account;
@@ -13,9 +16,14 @@ import java.util.List;
 public class SendMoneyCommand implements Command {
 
     private final ExchangeRateManager exchangeRateManager;
+    private final ObjectMapper objectMapper;
+    private final ArrayNode output;
 
-    public SendMoneyCommand(final ExchangeRateManager exchangeRateManager) {
+    public SendMoneyCommand(final ExchangeRateManager exchangeRateManager,
+                            final ObjectMapper objectMapper, final ArrayNode output) {
         this.exchangeRateManager = exchangeRateManager;
+        this.objectMapper = objectMapper;
+        this.output = output;
     }
 
     @Override
@@ -37,8 +45,16 @@ public class SendMoneyCommand implements Command {
             }
         }
 
+        // Handle user not found case
+        if (senderUser == null) {
+            addOutputToJson("User not found", command.getTimestamp());
+            return;
+        }
+
+        // Handle account not found case
         if (fromAccount == null || toAccount == null) {
-            return; // Accounts not found; no further action
+            addOutputToJson("User not found", command.getTimestamp());
+            return;
         }
 
         // Convert the amount to the receiver's currency
@@ -89,7 +105,7 @@ public class SendMoneyCommand implements Command {
         // Create sender transaction operation with commission
         TransactionOperation senderTransaction = new TransactionOperation(
                 command.getTimestamp(),
-                command.getDescription() ,
+                command.getDescription(),
                 fromAccount.getIban(),
                 toAccount.getIban(),
                 command.getAmount(),
@@ -111,5 +127,21 @@ public class SendMoneyCommand implements Command {
         // Add operations to accounts
         fromAccount.addOperation(senderTransaction);
         toAccount.addOperation(receiverTransaction);
+    }
+
+    /**
+     * Adds output JSON for failure cases.
+     */
+    private void addOutputToJson(String description, int timestamp) {
+        ObjectNode outputNode = objectMapper.createObjectNode();
+        ObjectNode detailsNode = objectMapper.createObjectNode();
+
+        outputNode.put("command", "sendMoney");
+        detailsNode.put("description", description);
+        detailsNode.put("timestamp", timestamp);
+        outputNode.set("output", detailsNode);
+        outputNode.put("timestamp", timestamp);
+
+        output.add(outputNode);
     }
 }

@@ -35,7 +35,7 @@ public class CommandFactory {
             case "createOneTimeCard" -> new CreateOneTimeCommand();
             case "deleteCard" -> new DeleteCardCommand();
             case "payOnline" -> new PayOnlineCommand(objectMapper, output, exchangeRateManager);
-            case "sendMoney" -> new SendMoneyCommand(exchangeRateManager);
+            case "sendMoney" -> new SendMoneyCommand(exchangeRateManager, objectMapper, output);
             case "setAlias" -> new SetAliasCommand();
             case "printTransactions" -> new PrintTransactions(objectMapper, output);
             case "setMinimumBalance" -> new SetMinimumBalance(objectMapper, output);
