@@ -21,6 +21,8 @@ import org.poo.operationTypes.InfoOperation;
 
 import java.util.List;
 
+import static org.poo.utils.Utils.generateCardNumber;
+
 public class PayOnlineCommand implements Command {
 
     private final ObjectMapper objectMapper;
@@ -79,8 +81,34 @@ public class PayOnlineCommand implements Command {
                         }
                     }
 
+                    // Calculate commission in RON
+                    double commissionInRON = payingUser.applyCommission(convertedAmount);
+
+                    // Convert commission back to account's currency
+                    double commissionInAccountCurrency = commissionInRON;
+                    if (!account.getCurrency().equalsIgnoreCase("RON")) {
+                        double exchangeRateToAccountCurrency = exchangeRateManager.getExchangeRate(
+                                "RON",
+                                account.getCurrency()
+                        );
+
+                        if (exchangeRateToAccountCurrency != -1) {
+                            commissionInAccountCurrency = commissionInRON * exchangeRateToAccountCurrency;
+                        } else {
+                            FailOperation failOperation = new FailOperation(
+                                    command.getTimestamp(),
+                                    "Exchange rate not available for commission"
+                            );
+                            account.addOperation(failOperation);
+                            return;
+                        }
+                    }
+
+                    // Total amount to deduct (amount + commission)
+                    double totalAmountToDeduct = convertedAmount + commissionInAccountCurrency;
+
                     // 1. Check for insufficient funds
-                    if (account.getBalance() < convertedAmount) {
+                    if (account.getBalance() < totalAmountToDeduct) {
                         FailOperation insufficientFundsOperation = new FailOperation(
                                 command.getTimestamp(),
                                 "Insufficient funds"
@@ -91,7 +119,7 @@ public class PayOnlineCommand implements Command {
                     }
 
                     // 2. Check if balance drops below the minimum balance
-                    if (account.getBalance() - convertedAmount <= account.getMinBalance()) {
+                    if (account.getBalance() - totalAmountToDeduct <= account.getMinBalance()) {
                         card.freeze(); // Freeze the card
                         FailOperation freezeOperation = new FailOperation(
                                 command.getTimestamp(),
@@ -124,7 +152,7 @@ public class PayOnlineCommand implements Command {
                                 0.0
                         );
                     } else if (commerciant.getCashbackType().equals("spendingThreshold")) {
-                        cashbackStrategy = new SpendingThresholdStrategy();
+                        cashbackStrategy = new SpendingThresholdStrategy(payingUser);
                         double totalSpending = account.getMerchantSpending(commerciant.getName());
                         cashback = cashbackStrategy.calculateCashback(
                                 command.getAmount(),
@@ -151,7 +179,7 @@ public class PayOnlineCommand implements Command {
                     }
 
                     // Apply cashback and perform the payment
-                    double finalAmount = convertedAmount - cashback;
+                    double finalAmount = convertedAmount - cashback + commissionInAccountCurrency;
                     account.removeFunds(finalAmount);
 
                     // Add payment operation
@@ -160,7 +188,7 @@ public class PayOnlineCommand implements Command {
                             account.getIban(),
                             command.getCardNumber(),
                             command.getCommerciant(),
-                            finalAmount + cashback, // I need the original amount for the operation
+                            finalAmount + cashback - commissionInAccountCurrency,
                             account.getCurrency(),
                             "Card payment"
                     );
@@ -177,15 +205,17 @@ public class PayOnlineCommand implements Command {
                                 "The card has been destroyed"
                         );
                         account.addOperation(destroyOneTime);
+                        account.deleteCard(oldCardNr);
 
                         CreateCardOperation newOneTime = new CreateCardOperation(
                                 command.getTimestamp(),
                                 account.getIban(),
-                                card.getCardNumber(),
+                                generateCardNumber(),
                                 payingUser.getEmail(),
                                 "New card created"
                         );
                         account.addOperation(newOneTime);
+                        account.addCard("OneTime", newOneTime.getCardNumber());
                     }
 
                     cardFound = true;

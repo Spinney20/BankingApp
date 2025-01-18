@@ -1,17 +1,18 @@
 package org.poo.cashbackStrategy;
 
+import org.poo.data.User;
+
 public class SpendingThresholdStrategy implements CashbackStrategy {
+
+    private final User user;
+
+    public SpendingThresholdStrategy(User user) {
+        this.user = user;
+    }
+
     @Override
     public double calculateCashback(double amount, String category, int transactionCount, double totalSpending) {
-        if (totalSpending >= 500) {
-            return amount * 0.005;
-        }
-        if (totalSpending >= 300) {
-            return amount * 0.004;
-        }
-        if (totalSpending >= 100) {
-            return amount * 0.001;
-        }
-        return 0.0;
+        // Get cashback rate from the user's current plan
+        return user.applyCashback(totalSpending, amount);
     }
 }

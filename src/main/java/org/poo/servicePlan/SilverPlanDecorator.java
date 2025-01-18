@@ -6,10 +6,10 @@ public class SilverPlanDecorator extends TransactionServiceDecorator {
     }
 
     @Override
-    public double applyCashback(double totalSpending, double transactionAmount) {
-        if (totalSpending >= 500) return transactionAmount * 0.005;
-        if (totalSpending >= 300) return transactionAmount * 0.004;
-        if (totalSpending >= 100) return transactionAmount * 0.003;
+    public double applyCashback(double totalSpendingThreshold, double transactionAmount) {
+        if (totalSpendingThreshold == 500) return transactionAmount * 0.005;  // 0.5%
+        if (totalSpendingThreshold == 300) return transactionAmount * 0.004;  // 0.4%
+        if (totalSpendingThreshold == 100) return transactionAmount * 0.003;  // 0.3%
         return 0.0;
     }
 

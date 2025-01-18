@@ -115,14 +115,18 @@ public class User {
         throw new IllegalArgumentException("Account not found.");
     }
 
-    /**
-     * Applies cashback based on the current user's plan.
-     * @param totalSpending - total spending for cashback calculation
-     * @param transactionAmount - the amount of the transaction
-     * @return - the cashback amount
-     */
     public double applyCashback(double totalSpending, double transactionAmount) {
-        return transactionService.applyCashback(totalSpending, transactionAmount);
+        // Get the cashback rate based on the total spending threshold and plan
+        if (totalSpending >= 500) {
+            return transactionService.applyCashback(500, transactionAmount);
+        }
+        if (totalSpending >= 300) {
+            return transactionService.applyCashback(300, transactionAmount);
+        }
+        if (totalSpending >= 100) {
+            return transactionService.applyCashback(100, transactionAmount);
+        }
+        return 0.0;
     }
 
     /**

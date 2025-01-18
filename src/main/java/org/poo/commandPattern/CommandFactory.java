@@ -49,6 +49,7 @@ public class CommandFactory {
             case "withdrawSavings" -> new WithdrawSavingsCommand(objectMapper, output,
                     exchangeRateManager);
             case "upgradePlan" -> new UpgradePlanCommand(exchangeRateManager);
+            case "cashWithdrawal" -> new CashWithdrawalCommand(exchangeRateManager, objectMapper, output);
             default -> {
                 System.out.println("Unknown command type: " + commandType);
                 yield null; // Return null for unrecognized commands
