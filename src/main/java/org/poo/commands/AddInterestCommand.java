@@ -7,6 +7,7 @@ import org.poo.commandPattern.Command;
 import org.poo.data.Account;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
+import org.poo.operationTypes.AddInterestOperation;
 
 import java.util.List;
 
@@ -74,6 +75,15 @@ public class AddInterestCommand implements Command {
 
         // Calculating and then adding the interest
         double interest = targetAccount.calculateInterest();
+        interest *= 100;
         targetAccount.addFunds(interest);
+
+        // Adding the operation to the account
+        AddInterestOperation interestOperation = new AddInterestOperation(
+                command.getTimestamp(),
+                interest,
+                targetAccount.getCurrency()
+        );
+        targetAccount.addOperation(interestOperation);
     }
 }

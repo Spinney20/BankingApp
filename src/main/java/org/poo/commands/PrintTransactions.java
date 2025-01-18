@@ -166,6 +166,17 @@ public class PrintTransactions implements Command {
                         operationNode.put("amount", cashWithdrawalOperation.getAmount());
                         operationNode.put("description", cashWithdrawalOperation.getDescription());
                         break;
+                    case "withdrawSavingsFail":
+                        WithdrawSavingsFailOperation withdrawSavingsFailOperation =
+                                (WithdrawSavingsFailOperation) operation;
+                        operationNode.put("description", withdrawSavingsFailOperation.getDescription());
+                        break;
+                    case "addInterest":
+                        AddInterestOperation addInterestOperation = (AddInterestOperation) operation;
+                        operationNode.put("amount", addInterestOperation.getAmount());
+                        operationNode.put("currency", addInterestOperation.getCurrency());
+                        operationNode.put("description", addInterestOperation.getDescription());
+                        break;
                     default:
                         break;
                 }

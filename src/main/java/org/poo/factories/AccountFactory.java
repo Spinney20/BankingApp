@@ -19,14 +19,14 @@ public final class AccountFactory {
      * @return - the account created
      */
     public static Account createAccount(final String type, final String iban,
-                                        final String currency) {
+                                        final String currency, final double interestRate) {
         switch (type.toLowerCase()) {
             case "classic":
                 return new ClassicAccount(iban, currency);
             case "savings":
-                return new SavingsAccount(iban, currency);
+                return new SavingsAccount(iban, currency, interestRate);
             case "business":
-                return new SavingsAccount(iban, currency);
+                return new SavingsAccount(iban, currency, interestRate);
             default:
                 throw new IllegalArgumentException("Unknown account type: " + type);
         }

@@ -32,7 +32,8 @@ public class AddAccountCommand implements Command {
                 Account account = AccountFactory.createAccount(// create account with factory
                         command.getAccountType(),
                         iban,
-                        command.getCurrency()
+                        command.getCurrency(),
+                        command.getInterestRate()
                 );
                 user.addAccount(account);
 

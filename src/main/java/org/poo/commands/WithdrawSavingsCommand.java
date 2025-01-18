@@ -10,6 +10,7 @@ import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 import org.poo.operationTypes.FailOperation;
 import org.poo.operationTypes.TransactionOperation;
+import org.poo.operationTypes.WithdrawSavingsFailOperation;
 
 import java.util.List;
 
@@ -83,11 +84,12 @@ public class WithdrawSavingsCommand implements Command {
         }
 
         if (classicAccount == null) {
-            // If no classic account found
-            ObjectNode errorOutput = objectMapper.createObjectNode();
-            errorOutput.put("description", "You do not have a classic account.");
-            commandOutput.set("output", errorOutput);
-            output.add(commandOutput);
+            // Dacă nu există cont de tip "classic", adaugă operațiunea de eșec
+            WithdrawSavingsFailOperation failOperation = new WithdrawSavingsFailOperation(
+                    command.getTimestamp(),
+                    "You do not have a classic account."
+            );
+            currentUser.getAccounts().get(0).addOperation(failOperation); // Sau un cont implicit
             return;
         }
 
