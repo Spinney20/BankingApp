@@ -338,4 +338,7 @@ public abstract class Account {
     public double getTotalSpentOnTresholdCashback() {
         return totalSpentOnTresholdCashback;
     }
+
+    public abstract boolean isBusinessAccount(); // metoda ca sa nu folosesc instanceof
+
 }

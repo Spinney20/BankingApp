@@ -45,4 +45,9 @@ public class SavingsAccount extends Account {
     public String getAccountType() {
         return "savings";
     }
+
+    @Override
+    public boolean isBusinessAccount() {
+        return false;
+    }
 }

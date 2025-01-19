@@ -52,8 +52,9 @@ public class CommandFactory {
             case "acceptSplitPayment" -> new AcceptSplitPaymentCommand(objectMapper, output);
             case "rejectSplitPayment" -> new RejectSplitPaymentCommand(objectMapper, output);
             case "addNewBusinessAssociate" -> new AddNewBusinessAssociateCommand();
-            case "changeSpendingLimit" -> new ChangeSpendingLimitCommand();
+            case "changeSpendingLimit" -> new ChangeSpendingLimitCommand(objectMapper, output);
             case "businessReport" -> new BusinessReportCommand(objectMapper, output);
+            case "changeDepositLimit" -> new ChangeDepositLimitCommand(objectMapper, output);
             default -> {
                 System.out.println("Unknown command type: " + commandType);
                 yield null; // Return null for unrecognized commands

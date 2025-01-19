@@ -37,4 +37,9 @@ public class ClassicAccount extends Account {
         throw new UnsupportedOperationException("Classic accounts do not support interest rates.");
     }
 
+    @Override
+    public boolean isBusinessAccount() {
+        return false;
+    }
+
 }

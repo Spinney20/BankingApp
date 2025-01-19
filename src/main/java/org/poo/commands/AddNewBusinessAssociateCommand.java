@@ -48,7 +48,7 @@ public class AddNewBusinessAssociateCommand implements Command {
         }
 
         businessAccount.addAssociate(newAssociateEmail, role, associate);
-        System.out.println("Associate added successfully");
+        System.out.println("Associate added successfully  with reole " + role);
     }
 
     private User findUserByEmail(List<User> users, String email) {

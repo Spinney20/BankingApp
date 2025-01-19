@@ -47,8 +47,8 @@ public class BusinessAccount extends Account {
             throw new IllegalArgumentException("The user is already an associate of the account.");
         }
         associates.put(email, role);
+        System.out.println("Associate pus in map cu rol " + role);
 
-        // Adaugă acest cont în lista de conturi a utilizatorului asociat
         if (associate != null) {
             associate.addAccount(this); // `this` este contul BusinessAccount curent
         }
@@ -151,5 +151,18 @@ public class BusinessAccount extends Account {
         }
 
         return defaultLimit * exchangeRate; // Convert the default limit to the account's currency
+    }
+
+    @Override
+    public boolean isBusinessAccount() {
+        return true; //true doar pentru BusinessAccount
+    }
+
+    public boolean isEmployee(User user) {
+        if (user == null) return false;
+        String role = associates.get(user.getEmail());
+        if (role == null) return false;
+        role = role.trim(); // remove extra spaces just in case
+        return role.equalsIgnoreCase("employee");
     }
 }

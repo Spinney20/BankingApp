@@ -11,12 +11,12 @@ import org.poo.fileio.CommandInput;
 
 import java.util.List;
 
-public class ChangeSpendingLimitCommand implements Command {
+public class ChangeDepositLimitCommand implements Command {
 
     private final ObjectMapper objectMapper;
     private final ArrayNode output;
 
-    public ChangeSpendingLimitCommand(ObjectMapper objectMapper, ArrayNode output) {
+    public ChangeDepositLimitCommand(ObjectMapper objectMapper, ArrayNode output) {
         this.objectMapper = objectMapper;
         this.output = output;
     }
@@ -25,7 +25,7 @@ public class ChangeSpendingLimitCommand implements Command {
     public void execute(List<User> users, CommandInput command) {
         String accountIban = command.getAccount();
         String requesterEmail = command.getEmail();
-        double newSpendingLimit = command.getAmount();
+        double newDepositLimit = command.getAmount();
 
         // Find the account by IBAN
         Account account = findAccountByIban(accountIban, users);
@@ -43,12 +43,12 @@ public class ChangeSpendingLimitCommand implements Command {
 
         // Check if the requester is the owner
         if (!businessAccount.isOwner(requesterEmail)) {
-            addErrorToOutput("You must be owner in order to change spending limit.", command.getTimestamp());
+            addErrorToOutput("You must be owner in order to change deposit limit.", command.getTimestamp());
             return;
         }
 
-        // Update the spending limit
-        businessAccount.changeGlobalSpendingLimit(newSpendingLimit);
+        // Update the deposit limit
+        businessAccount.changeGlobalDepositLimit(newDepositLimit);
     }
 
     private Account findAccountByIban(String iban, List<User> users) {
@@ -64,7 +64,7 @@ public class ChangeSpendingLimitCommand implements Command {
 
     private void addErrorToOutput(String description, int timestamp) {
         ObjectNode errorNode = objectMapper.createObjectNode();
-        errorNode.put("command", "changeSpendingLimit");
+        errorNode.put("command", "changeDepositLimit");
         ObjectNode outputDetails = objectMapper.createObjectNode();
         outputDetails.put("description", description);
         outputDetails.put("timestamp", timestamp);
