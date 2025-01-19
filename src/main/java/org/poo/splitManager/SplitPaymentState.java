@@ -12,7 +12,7 @@ import java.util.Set;
  *  - the split type ("custom"/"equal")
  *  - the participating accounts
  *  - the map (Account -> double amount)
- *  - a reference to the pending Operation (which might be SplitPaymentOperation or SplitCustomPaymentOperation)
+ *  - a reference to the pending Operation (which might be SplitEqualPaymentOperation or SplitCustomPaymentOperation)
  *  - the accepted/rejected status
  *  - the creation timestamp
  */
@@ -20,7 +20,7 @@ public class SplitPaymentState {
     private final String splitPaymentType;      // "custom" or "equal"
     private final Set<Account> allAccounts;     // the accounts involved
     private final Map<Account, Double> splitMap; // how much each account should pay
-    private final Operation pendingOperation;   // now a generic Operation, not specifically SplitPaymentOperation
+    private final Operation pendingOperation;   // now a generic Operation, not specifically SplitEqualPaymentOperation
 
     private final Set<Account> acceptedAccounts; // who has accepted
     private boolean rejected;                   // did someone reject?

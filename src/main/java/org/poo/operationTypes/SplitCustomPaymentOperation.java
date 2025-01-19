@@ -11,28 +11,31 @@ import java.util.List;
 
 /**
  * Specialized operation class for "custom" split payments.
- * It produces JSON in the format:
- *
+ * Produces JSON like:
  * {
- *   "amountForUsers": [ 90, 78 ],
- *   "currency": "RON",
- *   "description": "Split payment of 168.00 RON",
- *   "involvedAccounts": [ "RO69...", "RO58..." ],
+ *   "amountForUsers": [...],
+ *   "currency": "...",
+ *   "description": "...",
+ *   "error": "...",           // only if non-null
+ *   "involvedAccounts": [...],
  *   "splitPaymentType": "custom",
- *   "timestamp": 5
+ *   "timestamp": ...
  * }
  */
 @Getter
 @Setter
 public class SplitCustomPaymentOperation extends Operation {
 
-    private double amount;                // total amount
-    private String currency;             // e.g. "RON"
-    private String description;          // e.g. "Split payment of 168.00 RON"
-    private List<String> involvedAccounts; // IBANs of the involved accounts
-    private List<Double> amountForUsers; // amounts for each IBAN in the same order
-    private String splitPaymentType;     // always "custom"
-    private int timestamp;               // creation timestamp of the splitPayment command
+    private double amount;                 // total split amount
+    private String currency;              // e.g. "RON" or "EUR"
+    private String description;           // e.g. "Split payment of 168.00 RON"
+    private List<String> involvedAccounts; // IBANs of all participating accounts
+    private List<Double> amountForUsers;  // amounts each IBAN pays
+    private String splitPaymentType;      // "custom"
+    private int timestamp;                // creation time for this split
+
+    // We'll store an optional error message here, if there's insufficient funds
+    private String error;                 // e.g. "Account ... has insufficient funds..."
 
     public SplitCustomPaymentOperation(int timestamp,
                                        double amount,
@@ -41,7 +44,7 @@ public class SplitCustomPaymentOperation extends Operation {
                                        List<String> involvedAccounts,
                                        List<Double> amountForUsers,
                                        String splitPaymentType) {
-        // Call the superclass constructor if 'Operation' requires a timestamp
+        // The base Operation constructor sets the overall timestamp
         super(timestamp);
         this.timestamp = timestamp;
         this.amount = amount;
@@ -50,45 +53,54 @@ public class SplitCustomPaymentOperation extends Operation {
         this.involvedAccounts = involvedAccounts;
         this.amountForUsers = amountForUsers;
         this.splitPaymentType = splitPaymentType;
+        this.error = null;  // no error initially
     }
 
     @Override
     public String getOperationType() {
+        // Identifies this operation in your printTransactions switch
         return "SplitPaymentCUSTOM";
     }
 
     /**
-     * If you have a printing or JSON-building mechanism,
-     * you can override a method (e.g. toJson) to produce the exact layout.
-     * Adjust to match however your system prints operations.
+     * Overriding setError(...) from the base 'Operation' class to store
+     * the error message in our 'error' field. No need for instanceof checks!
+     */
+    @Override
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    /**
+     * Convert this operation to JSON for printing or logs.
+     * The "error" field only appears if 'error' is non-null/empty.
      */
     public ObjectNode toJson(ObjectMapper mapper) {
         ObjectNode node = mapper.createObjectNode();
 
-        // amountForUsers
+        // amountForUsers => array
         ArrayNode amountsArray = mapper.createArrayNode();
         for (Double value : amountForUsers) {
             amountsArray.add(value);
         }
         node.set("amountForUsers", amountsArray);
 
-        // currency
         node.put("currency", currency);
-
-        // description
         node.put("description", description);
 
-        // involvedAccounts
+        // if there's an error, include it
+        if (error != null && !error.isEmpty()) {
+            node.put("error", error);
+        }
+
+        // involvedAccounts => array
         ArrayNode accountsArray = mapper.createArrayNode();
         for (String iban : involvedAccounts) {
             accountsArray.add(iban);
         }
         node.set("involvedAccounts", accountsArray);
 
-        // splitPaymentType
         node.put("splitPaymentType", splitPaymentType);
-
-        // timestamp
         node.put("timestamp", timestamp);
 
         return node;

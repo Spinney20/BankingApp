@@ -1,6 +1,8 @@
 package org.poo.splitManager;
 
 import org.poo.data.Account;
+import org.poo.data.Operation;
+import org.poo.operationTypes.SplitCustomPaymentOperation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.List;
  *  - At acceptance/rejection, it searches the first matching request
  *  - Finalizes the payment when all participants accept
  *  - Cancels it if any user rejects
+ *  - If insufficient funds, it sets the error on the operation and rejects
  */
 public class SplitPaymentManager {
     private static SplitPaymentManager instance;
@@ -30,7 +33,7 @@ public class SplitPaymentManager {
     }
 
     /**
-     * Adds a new split payment to the list of pending splits.
+     * Adds a new split payment state to the list of pending splits.
      */
     public void addSplit(SplitPaymentState state) {
         pendingSplits.add(state);
@@ -57,13 +60,10 @@ public class SplitPaymentManager {
 
     /**
      * Marks the given account as accepting the split.
-     * If all participants have accepted, the payment is finalized.
+     * If all participants have accepted, the payment is finalized (or tries to finalize).
      */
     public void acceptSplit(SplitPaymentState state, Account account) {
-        // Mark acceptance
         state.accept(account);
-
-        // If all have accepted, finalize the payment
         if (state.isFullyAccepted()) {
             finalizeSplit(state);
         }
@@ -74,42 +74,66 @@ public class SplitPaymentManager {
      */
     public void rejectSplit(SplitPaymentState state) {
         state.reject();
-        // Cancel any pending operations
         cancelPendingOperation(state);
-        // Remove it from the list
         pendingSplits.remove(state);
     }
 
     /**
      * Finalizes the split payment:
      *  - Checks each account's balance
-     *  - If any account is short of funds, throw "INSUFFICIENT_FUNDS:IBAN"
+     *  - If any account has insufficient funds, we set an error on the operation,
+     *    reject the split, and remove from pending
      *  - Otherwise, subtract amounts and move the operation from "pending" to "completed"
      *  - Remove the split request from the list
      */
     private void finalizeSplit(SplitPaymentState state) {
-        // 1. Check balances
-        state.getAllAccounts().forEach(acc -> {
+        // 1) Check if any account has insufficient funds
+        Account insufficientAccount = null;
+        for (Account acc : state.getAllAccounts()) {
             double amount = state.getSplitMap().get(acc);
             if (acc.getBalance() < amount) {
-                throw new RuntimeException("INSUFFICIENT_FUNDS:" + acc.getIban());
+                insufficientAccount = acc;
+                break;
             }
-        });
+        }
 
-        // 2. All good, subtract amounts and update each account's history
-        state.getAllAccounts().forEach(acc -> {
+        if (insufficientAccount != null) {
+            // We found an account with not enough balance
+            String msg = "Account " + insufficientAccount.getIban()
+                    + " has insufficient funds for a split payment.";
+
+            Operation op = state.getPendingOperation();
+            // Instead of instanceof, we rely on op.setError(...)
+            // which is overridden in SplitCustomPaymentOperation,
+            // and does nothing for plain ones if you prefer that.
+            op.setError(msg);
+
+            // Mark the state as rejected
+            state.reject();
+            pendingSplits.remove(state);
+
+            // Remove from pending in each account and add to final history so the user sees the error
+            for (Account acc : state.getAllAccounts()) {
+                acc.removePendingOperation(op);
+                acc.addOperation(op);
+            }
+
+            return; // stop here
+        }
+
+        // 2) If all accounts have enough funds, finalize
+        for (Account acc : state.getAllAccounts()) {
             double amount = state.getSplitMap().get(acc);
             acc.removeFunds(amount);
 
-            // Remove from pending operations, add to completed
             acc.removePendingOperation(state.getPendingOperation());
             acc.addOperation(state.getPendingOperation());
-        });
+        }
 
-        // 3. Mark as finalized
+        // 3) Mark as finalized
         state.setFinalized(true);
 
-        // 4. Remove from manager's pending list
+        // 4) Remove from manager
         pendingSplits.remove(state);
     }
 
@@ -117,8 +141,8 @@ public class SplitPaymentManager {
      * Cancels the pending operation in all participant accounts if the split is rejected.
      */
     private void cancelPendingOperation(SplitPaymentState state) {
-        state.getAllAccounts().forEach(acc ->
-                acc.removePendingOperation(state.getPendingOperation())
-        );
+        for (Account acc : state.getAllAccounts()) {
+            acc.removePendingOperation(state.getPendingOperation());
+        }
     }
 }

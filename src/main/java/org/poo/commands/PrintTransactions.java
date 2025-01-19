@@ -1,5 +1,6 @@
 package org.poo.commands;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -115,23 +116,55 @@ public class PrintTransactions implements Command {
                                 checkCardStatusOperation.getDescription());
                         break;
 
-                    case "SplitPayment":
-                        SplitPaymentOperation splitPaymentOperation = (SplitPaymentOperation) operation;
+                    case "SplitPaymentEQUAL": {
+                        SplitEqualPaymentOperation splitEqualOp = (SplitEqualPaymentOperation) operation;
+
+                        // 3) "amount" => show the share rather than the total
                         operationNode.set("amount",
-                                objectMapper.getNodeFactory().
-                                        numberNode(splitPaymentOperation.getAmount()));
+                                objectMapper.getNodeFactory().numberNode(splitEqualOp.getAmount() /
+                                        splitEqualOp.getSplitMap().size()));
+
+                        // 4) "currency"
                         operationNode.set("currency",
-                                objectMapper.getNodeFactory().
-                                        textNode(splitPaymentOperation.getCurrency()));
+                                objectMapper.getNodeFactory().textNode(splitEqualOp.getCurrency()));
+
+                        // 5) "description"
+                        String desc = String.format("Split payment of %.2f %s",
+                                splitEqualOp.getAmount(),
+                                splitEqualOp.getCurrency());
                         operationNode.set("description",
-                                objectMapper.getNodeFactory().
-                                        textNode(splitPaymentOperation.getDescription()));
-                        operationNode.set("involvedAccounts",
-                                splitPaymentOperation.getInvolvedAccounts());
+                                objectMapper.getNodeFactory().textNode(desc));
+
+                        // 6) If there’s an error (insufficient funds), display it
+                        if (splitEqualOp.getError() != null && !splitEqualOp.getError().isEmpty()) {
+                            operationNode.set("error",
+                                    objectMapper.getNodeFactory().textNode(splitEqualOp.getError()));
+                        }
+
+                        // 7) "involvedAccounts" => attach the existing ArrayNode
+                        // Convert the existing ArrayNode of IBANs to a new array
+                        ArrayNode originalAccounts = splitEqualOp.getInvolvedAccounts();
+                        ArrayNode newAccountsArray = objectMapper.createArrayNode();
+
+                        for (JsonNode ibanNode : originalAccounts) {
+                            // .asText() converts the JsonNode to a string
+                            String iban = ibanNode.asText();
+                            newAccountsArray.add(iban);
+                        }
+
+                        operationNode.set("involvedAccounts", newAccountsArray);;
+
+                        // 8) "splitPaymentType"
                         operationNode.set("splitPaymentType",
-                                objectMapper.getNodeFactory().
-                                        textNode(splitPaymentOperation.getSplitPaymentType()));
+                                objectMapper.getNodeFactory().textNode(splitEqualOp.getSplitPaymentType()));
+
+                        // 9) "timestamp"
+                        operationNode.set("timestamp",
+                                objectMapper.getNodeFactory().numberNode(splitEqualOp.getTimestamp()));
+
                         break;
+                    }
+
 
 
                     case "SplitPaymentFail":
@@ -161,7 +194,7 @@ public class PrintTransactions implements Command {
                         SplitCustomPaymentOperation splitCustomPaymentOperation =
                                 (SplitCustomPaymentOperation) operation;
 
-                        // "amount"
+                        // "amountForUsers"
                         ArrayNode amountsArray = objectMapper.createArrayNode();
                         for (Double userAmount : splitCustomPaymentOperation.getAmountForUsers()) {
                             amountsArray.add(userAmount);
@@ -176,7 +209,13 @@ public class PrintTransactions implements Command {
                         operationNode.set("description",
                                 objectMapper.getNodeFactory().textNode(splitCustomPaymentOperation.getDescription()));
 
-                        // "involvedAccounts" => must build an ArrayNode from the List<String>
+                        // If there's an error, show it
+                        if (splitCustomPaymentOperation.getError() != null) {
+                            operationNode.set("error",
+                                    objectMapper.getNodeFactory().textNode(splitCustomPaymentOperation.getError()));
+                        }
+
+                        // "involvedAccounts"
                         ArrayNode accountsArray = objectMapper.createArrayNode();
                         for (String iban : splitCustomPaymentOperation.getInvolvedAccounts()) {
                             accountsArray.add(iban);
@@ -187,8 +226,13 @@ public class PrintTransactions implements Command {
                         operationNode.set("splitPaymentType",
                                 objectMapper.getNodeFactory().textNode(splitCustomPaymentOperation.getSplitPaymentType()));
 
+                        // "timestamp"
+                        operationNode.set("timestamp",
+                                objectMapper.getNodeFactory().numberNode(splitCustomPaymentOperation.getTimestamp()));
+
                         break;
                     }
+
 
 
                     case "info":

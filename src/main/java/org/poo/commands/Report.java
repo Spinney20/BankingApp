@@ -126,21 +126,21 @@ public class Report implements Command {
                         break;
 
                     case "SplitPayment":
-                        SplitPaymentOperation splitPaymentOperation = (SplitPaymentOperation) operation;
+                        SplitEqualPaymentOperation splitEqualPaymentOperation = (SplitEqualPaymentOperation) operation;
                         operationNode.set("amount",
                                 objectMapper.getNodeFactory().
-                                        numberNode(splitPaymentOperation.getAmount()));
+                                        numberNode(splitEqualPaymentOperation.getAmount()));
                         operationNode.set("currency",
                                 objectMapper.getNodeFactory().
-                                        textNode(splitPaymentOperation.getCurrency()));
+                                        textNode(splitEqualPaymentOperation.getCurrency()));
                         operationNode.set("description",
                                 objectMapper.getNodeFactory().
-                                        textNode(splitPaymentOperation.getDescription()));
+                                        textNode(splitEqualPaymentOperation.getDescription()));
                         operationNode.set("involvedAccounts",
-                                splitPaymentOperation.getInvolvedAccounts());
+                                splitEqualPaymentOperation.getInvolvedAccounts());
                         operationNode.set("splitPaymentType",
                                 objectMapper.getNodeFactory().
-                                        textNode(splitPaymentOperation.getSplitPaymentType()));
+                                        textNode(splitEqualPaymentOperation.getSplitPaymentType()));
                         break;
 
 

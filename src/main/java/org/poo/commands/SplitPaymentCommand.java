@@ -10,7 +10,7 @@ import org.poo.data.Operation;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 import org.poo.operationTypes.SplitCustomPaymentOperation;
-import org.poo.operationTypes.SplitPaymentOperation;
+import org.poo.operationTypes.SplitEqualPaymentOperation;
 import org.poo.splitManager.SplitPaymentManager;
 import org.poo.splitManager.SplitPaymentState;
 import org.poo.splitStrategy.CustomSplitPaymentStrategy;
@@ -25,10 +25,9 @@ import java.util.stream.Collectors;
  *  1) Finds the involved accounts
  *  2) Chooses the splitting strategy (equal or custom)
  *  3) Builds a splitMap (Account -> amount)
- *  4) Creates a SplitPaymentOperation (pending)
+ *  4) Creates the appropriate Operation (SplitCustomPaymentOperation or SplitEqualPaymentOperation)
  *  5) Creates a SplitPaymentState and adds it to the manager
  *  6) Adds the pending operation to each account
- *  7) (Optionally) Prints "Split payment of {amount} {currency}"
  */
 public class SplitPaymentCommand implements Command {
     private final ObjectMapper objectMapper;
@@ -58,10 +57,10 @@ public class SplitPaymentCommand implements Command {
             return;
         }
 
-        // 2) Select the strategy
+        // 2) Determine the strategy
         SplitPaymentStrategy strategy = selectStrategy(command.getSplitPaymentType());
 
-        // 3) Build the map of (Account -> amount)
+        // 3) Calculate the split map
         Map<Account, Double> splitMap;
         try {
             splitMap = strategy.calculateSplit(involvedAccounts, command, exchangeRateManager);
@@ -70,37 +69,43 @@ public class SplitPaymentCommand implements Command {
             return;
         }
 
-        // 4) Create a pending operation object
-        //    If "custom", use SplitCustomPaymentOperation; otherwise, use the old SplitPaymentOperation
+        // 4) Build the Operation object
         Operation pendingOp;
-        if ("custom".equalsIgnoreCase(command.getSplitPaymentType())) {
-            // Create a specialized custom operation
-            // (Adjust the constructor parameters to match your SplitCustomPaymentOperation)
+        String splitType = command.getSplitPaymentType();
+        if ("custom".equalsIgnoreCase(splitType)) {
+            // --- CUSTOM SPLIT ---
             pendingOp = new SplitCustomPaymentOperation(
                     command.getTimestamp(),
                     command.getAmount(),
                     command.getCurrency(),
                     "Split payment of " + String.format("%.2f", command.getAmount()) + " " + command.getCurrency(),
-                    command.getAccounts(),
-                    command.getAmountForUsers(),
+                    command.getAccounts(),         // List<String> of IBANs
+                    command.getAmountForUsers(),   // List<Double> user amounts
                     "custom"
             );
         } else {
-            // Use the original SplitPaymentOperation for "equal" (or default)
-            pendingOp = new SplitPaymentOperation(
+            // --- EQUAL SPLIT ---
+            // Build an ArrayNode of IBANs so we can pass it to SplitEqualPaymentOperation
+            ArrayNode arrayNodeIbans = objectMapper.createArrayNode();
+            for (String iban : ibans) {
+                arrayNodeIbans.add(iban);
+            }
+
+            pendingOp = new SplitEqualPaymentOperation(
                     command.getTimestamp(),
                     command.getAmount(),
                     command.getCurrency(),
                     "Split payment of " + String.format("%.2f", command.getAmount()) + " " + command.getCurrency(),
-                    null,
-                    command.getSplitPaymentType(),
+                    arrayNodeIbans,
+                    // If 'splitPaymentType' is null or not "equal", we can default to "equal"
+                    (splitType == null ? "equal" : splitType),
                     splitMap
             );
         }
 
         // 5) Create a SplitPaymentState and add it to the manager
         SplitPaymentState state = new SplitPaymentState(
-                command.getSplitPaymentType(),
+                splitType,
                 new HashSet<>(involvedAccounts),
                 splitMap,
                 pendingOp,
@@ -110,22 +115,17 @@ public class SplitPaymentCommand implements Command {
         SplitPaymentManager manager = SplitPaymentManager.getInstance();
         manager.addSplit(state);
 
-        // 6) Mark this operation as pending for each account
+        // 6) Mark pending on each involved account
         for (Account acc : involvedAccounts) {
             acc.addPendingOperation(pendingOp);
         }
-
-        // (Note: The original code does not print a success message at the end,
-        // so we leave it out unless you want to add it.)
     }
 
     private SplitPaymentStrategy selectStrategy(String splitPaymentType) {
         if ("custom".equalsIgnoreCase(splitPaymentType)) {
             return new CustomSplitPaymentStrategy();
-        } else {
-            // Default to "equal"
-            return new EqualSplitPaymentStrategy();
         }
+        return new EqualSplitPaymentStrategy();
     }
 
     private List<Account> findAccounts(List<String> ibans, List<User> users) {
