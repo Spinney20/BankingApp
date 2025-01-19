@@ -21,6 +21,11 @@ public abstract class Account {
     private Map<String, Double> spendingTotals; // Tracks total spending per category
     private Map<String, Boolean> cashbackApplied; // Tracks if cashback was applied per category
     private Map<String, Double> merchantSpending;
+    private Map<String, Boolean> nrOfTransactionsCashbackUsed;
+
+    // Pending operations for split payments
+    private List<Operation> pendingOperations;
+
     // Constructor
     public Account(final String iban, final String currency) {
         this.iban = iban;
@@ -35,6 +40,10 @@ public abstract class Account {
         this.spendingTotals = new HashMap<>();
         this.cashbackApplied = new HashMap<>();
         this.merchantSpending = new HashMap<>();
+        this.nrOfTransactionsCashbackUsed = new HashMap<>();
+
+        // Initialize pending operations
+        this.pendingOperations = new ArrayList<>();
     }
 
     /***
@@ -236,6 +245,47 @@ public abstract class Account {
      */
     public void applyCashback(String category) {
         cashbackApplied.put(category, true);
+    }
+
+    /***
+     * Add a pending operation to the account.
+     * @param operation - the operation to be added to pending.
+     */
+    public void addPendingOperation(Operation operation) {
+        pendingOperations.add(operation);
+    }
+
+    /***
+     * Remove a pending operation from the account.
+     * @param operation - the operation to be removed.
+     */
+    public void removePendingOperation(Operation operation) {
+        pendingOperations.remove(operation);
+    }
+
+    /***
+     * Get the list of pending operations.
+     * @return - list of pending operations.
+     */
+    public List<Operation> getPendingOperations() {
+        return new ArrayList<>(pendingOperations);
+    }
+
+    /***
+     * Getter for nrOfTransactionsCashbackUsed.
+     * @param category - the category name.
+     * @return - true if the cashback was used, false otherwise.
+     */
+    public boolean hasUsedNrOfTransactionsCashback(String category) {
+        return nrOfTransactionsCashbackUsed.getOrDefault(category, false);
+    }
+
+    /***
+     * Mark nrOfTransactionsCashback as used for a specific category.
+     * @param category - the category name.
+     */
+    public void markNrOfTransactionsCashbackAsUsed(String category) {
+        nrOfTransactionsCashbackUsed.put(category, true);
     }
 
     /***

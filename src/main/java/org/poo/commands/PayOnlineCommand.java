@@ -18,6 +18,7 @@ import org.poo.operationTypes.CreateCardOperation;
 import org.poo.operationTypes.DeleteCardOperation;
 import org.poo.operationTypes.FailOperation;
 
+import java.sql.SQLOutput;
 import java.util.List;
 
 import static org.poo.utils.Utils.generateCardNumber;
@@ -165,7 +166,7 @@ public class PayOnlineCommand implements Command {
                     // Apply the correct cashback strategy
                     CashbackStrategy cashbackStrategy;
                     if (commerciant.getCashbackType().equals("nrOfTransactions")) {
-                        cashbackStrategy = new NrOfTransactionsStrategy();
+                        cashbackStrategy = new NrOfTransactionsStrategy(account);
                         cashback = cashbackStrategy.calculateCashback(
                                 command.getAmount(),
                                 commerciant.getCategory(),
@@ -174,12 +175,11 @@ public class PayOnlineCommand implements Command {
                         );
                     } else if (commerciant.getCashbackType().equals("spendingThreshold")) {
                         cashbackStrategy = new SpendingThresholdStrategy(payingUser);
-                        double totalSpending = account.getMerchantSpending(commerciant.getName());
                         cashback = cashbackStrategy.calculateCashback(
                                 command.getAmount(),
                                 commerciant.getCategory(),
                                 0,
-                                totalSpending + command.getAmount()
+                                amountInRON
                         );
 
                         // Convert cashback to the account's currency
@@ -198,10 +198,15 @@ public class PayOnlineCommand implements Command {
 
                         account.addMerchantSpending(commerciant.getName(), command.getAmount());
                     }
-
+                    if(command.getTimestamp() == 5){
+                        System.out.println("Cashback is " + cashback);
+                    }
                     // Apply cashback and perform the payment
                     double finalAmount = totalAmountToDeduct - cashback;
                     account.removeFunds(finalAmount);
+                    if(command.getTimestamp() == 5){
+                        System.out.println("Final amount is " + finalAmount);
+                    }
 
                     // Add payment operation
                     if (finalAmount > 0) {

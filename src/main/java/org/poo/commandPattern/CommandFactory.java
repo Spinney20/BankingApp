@@ -40,8 +40,7 @@ public class CommandFactory {
             case "printTransactions" -> new PrintTransactions(objectMapper, output);
             case "setMinimumBalance" -> new SetMinimumBalance(objectMapper, output);
             case "checkCardStatus" -> new CheckCardStatus(objectMapper, output);
-            case "splitPayment" -> new SplitPaymentCommand(objectMapper, output,
-                    exchangeRateManager);
+            case "splitPayment" -> new SplitPaymentCommand(objectMapper , output, exchangeRateManager);
             case "report" -> new Report(objectMapper, output);
             case "spendingsReport" -> new SpendingReport(objectMapper, output);
             case "changeInterestRate" -> new ChangeInterestCommand(objectMapper, output);
@@ -50,6 +49,8 @@ public class CommandFactory {
                     exchangeRateManager);
             case "upgradePlan" -> new UpgradePlanCommand(exchangeRateManager);
             case "cashWithdrawal" -> new CashWithdrawalCommand(exchangeRateManager, objectMapper, output);
+            case "acceptSplitPayment" -> new AcceptSplitPaymentCommand(objectMapper, output);
+            case "rejectSplitPayment" -> new RejectSplitPaymentCommand(objectMapper, output);
             default -> {
                 System.out.println("Unknown command type: " + commandType);
                 yield null; // Return null for unrecognized commands

@@ -126,26 +126,45 @@ public class Report implements Command {
                         break;
 
                     case "SplitPayment":
-                        SplitPaymentOperation splitPaymentOperation =
-                                (SplitPaymentOperation) operation;
-                        operationNode.put("amount",
-                                String.format("%.2f", splitPaymentOperation.getAmount()));
-                        operationNode.put("currency", splitPaymentOperation.getCurrency());
-                        operationNode.put("description", splitPaymentOperation.getDescription());
+                        SplitPaymentOperation splitPaymentOperation = (SplitPaymentOperation) operation;
+                        operationNode.set("amount",
+                                objectMapper.getNodeFactory().
+                                        numberNode(splitPaymentOperation.getAmount()));
+                        operationNode.set("currency",
+                                objectMapper.getNodeFactory().
+                                        textNode(splitPaymentOperation.getCurrency()));
+                        operationNode.set("description",
+                                objectMapper.getNodeFactory().
+                                        textNode(splitPaymentOperation.getDescription()));
                         operationNode.set("involvedAccounts",
                                 splitPaymentOperation.getInvolvedAccounts());
+                        operationNode.set("splitPaymentType",
+                                objectMapper.getNodeFactory().
+                                        textNode(splitPaymentOperation.getSplitPaymentType()));
                         break;
 
-                    case "splitFailure":
+
+                    case "SplitPaymentFail":
                         SplitPaymentFailOperation splitPaymentFailOperation =
                                 (SplitPaymentFailOperation) operation;
-                        operationNode.put("amount", splitPaymentFailOperation.getAmount());
-                        operationNode.put("currency", splitPaymentFailOperation.getCurrency());
-                        operationNode.put("description",
-                                splitPaymentFailOperation.getDescription());
-                        operationNode.put("error", splitPaymentFailOperation.getError());
+                        operationNode.set("amount",
+                                objectMapper.getNodeFactory().
+                                        numberNode(splitPaymentFailOperation.getAmount()));
+                        operationNode.set("currency",
+                                objectMapper.getNodeFactory().
+                                        textNode(splitPaymentFailOperation.getCurrency()));
+                        operationNode.set("description",
+                                objectMapper.getNodeFactory().
+                                        textNode(splitPaymentFailOperation.getDescription()));
+                        operationNode.set("error",
+                                objectMapper.getNodeFactory().
+                                        textNode(splitPaymentFailOperation.getError()));
                         operationNode.set("involvedAccounts",
                                 splitPaymentFailOperation.getInvolvedAccounts());
+                        // Add splitPaymentType to the output
+                        operationNode.set("splitPaymentType",
+                                objectMapper.getNodeFactory().
+                                        textNode(splitPaymentFailOperation.getSplitPaymentType()));
                         break;
 
                     default:

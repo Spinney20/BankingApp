@@ -116,8 +116,7 @@ public class PrintTransactions implements Command {
                         break;
 
                     case "SplitPayment":
-                        SplitPaymentOperation splitPaymentOperation =
-                                (SplitPaymentOperation) operation;
+                        SplitPaymentOperation splitPaymentOperation = (SplitPaymentOperation) operation;
                         operationNode.set("amount",
                                 objectMapper.getNodeFactory().
                                         numberNode(splitPaymentOperation.getAmount()));
@@ -129,9 +128,13 @@ public class PrintTransactions implements Command {
                                         textNode(splitPaymentOperation.getDescription()));
                         operationNode.set("involvedAccounts",
                                 splitPaymentOperation.getInvolvedAccounts());
+                        operationNode.set("splitPaymentType",
+                                objectMapper.getNodeFactory().
+                                        textNode(splitPaymentOperation.getSplitPaymentType()));
                         break;
 
-                    case "splitFailure":
+
+                    case "SplitPaymentFail":
                         SplitPaymentFailOperation splitPaymentFailOperation =
                                 (SplitPaymentFailOperation) operation;
                         operationNode.set("amount",
@@ -148,7 +151,45 @@ public class PrintTransactions implements Command {
                                         textNode(splitPaymentFailOperation.getError()));
                         operationNode.set("involvedAccounts",
                                 splitPaymentFailOperation.getInvolvedAccounts());
+                        // Add splitPaymentType to the output
+                        operationNode.set("splitPaymentType",
+                                objectMapper.getNodeFactory().
+                                        textNode(splitPaymentFailOperation.getSplitPaymentType()));
                         break;
+
+                    case "SplitPaymentCUSTOM": {
+                        SplitCustomPaymentOperation splitCustomPaymentOperation =
+                                (SplitCustomPaymentOperation) operation;
+
+                        // "amount"
+                        ArrayNode amountsArray = objectMapper.createArrayNode();
+                        for (Double userAmount : splitCustomPaymentOperation.getAmountForUsers()) {
+                            amountsArray.add(userAmount);
+                        }
+                        operationNode.set("amountForUsers", amountsArray);
+
+                        // "currency"
+                        operationNode.set("currency",
+                                objectMapper.getNodeFactory().textNode(splitCustomPaymentOperation.getCurrency()));
+
+                        // "description"
+                        operationNode.set("description",
+                                objectMapper.getNodeFactory().textNode(splitCustomPaymentOperation.getDescription()));
+
+                        // "involvedAccounts" => must build an ArrayNode from the List<String>
+                        ArrayNode accountsArray = objectMapper.createArrayNode();
+                        for (String iban : splitCustomPaymentOperation.getInvolvedAccounts()) {
+                            accountsArray.add(iban);
+                        }
+                        operationNode.set("involvedAccounts", accountsArray);
+
+                        // "splitPaymentType"
+                        operationNode.set("splitPaymentType",
+                                objectMapper.getNodeFactory().textNode(splitCustomPaymentOperation.getSplitPaymentType()));
+
+                        break;
+                    }
+
 
                     case "info":
                         InfoOperation infoOperation = (InfoOperation) operation;
