@@ -19,14 +19,20 @@ public class AddFundsCommand implements Command {
     @Override
     public void execute(final List<User> users, final CommandInput command) {
         // Iterate through users
+        boolean accountFound = false;
         for (User user : users) {
             if (user.getAccounts() != null) {
                 for (Account account : user.getAccounts()) {
                     if (account.getIban().equals(command.getAccount())) {
                         account.addFunds(command.getAmount());
+                        account.addDeposit(command.getEmail(), command.getAmount());
+                        accountFound = true;
                         break;
                     }
                 }
+            }
+            if (accountFound) {
+                break;
             }
         }
     }

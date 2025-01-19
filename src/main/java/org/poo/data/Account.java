@@ -25,6 +25,7 @@ public abstract class Account {
 
     // Pending operations for split payments
     private List<Operation> pendingOperations;
+    private double totalSpentOnTresholdCashback;
 
     // Constructor
     public Account(final String iban, final String currency) {
@@ -314,5 +315,27 @@ public abstract class Account {
     public void addMerchantSpending(String merchantName, double amount) {
         double currentSpending = merchantSpending.getOrDefault(merchantName, 0.0);
         merchantSpending.put(merchantName, currentSpending + amount);
+    }
+
+
+    public void addCommerciantTransaction(String merchantName, double amount) {
+        // nu face nimic pentru conturile care nu sunt de tip business
+    }
+
+    public void addSpent(String userEmail, double amount) {
+        // Implicit, conturile standard nu fac nimic
+    }
+
+    public void addDeposit(String userEmail, double amount) {
+        // Implicit, conturile standard nu fac nimic
+    }
+
+    public double incrementTotalSpentOnTresholdCashback(double amount) {
+        totalSpentOnTresholdCashback += amount;
+        return totalSpentOnTresholdCashback;
+    }
+
+    public double getTotalSpentOnTresholdCashback() {
+        return totalSpentOnTresholdCashback;
     }
 }

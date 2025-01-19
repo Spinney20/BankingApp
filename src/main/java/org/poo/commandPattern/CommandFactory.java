@@ -28,7 +28,7 @@ public class CommandFactory {
     public Command createCommand(final String commandType) {
         return switch (commandType) {
             case "printUsers" -> new PrintUsers(objectMapper, output);
-            case "addAccount" -> new AddAccountCommand();
+            case "addAccount" -> new AddAccountCommand(exchangeRateManager);
             case "createCard" -> new CreateCardCommand();
             case "addFunds" -> new AddFundsCommand();
             case "deleteAccount" -> new DeleteAccountCommand(objectMapper, output);
@@ -51,6 +51,9 @@ public class CommandFactory {
             case "cashWithdrawal" -> new CashWithdrawalCommand(exchangeRateManager, objectMapper, output);
             case "acceptSplitPayment" -> new AcceptSplitPaymentCommand(objectMapper, output);
             case "rejectSplitPayment" -> new RejectSplitPaymentCommand(objectMapper, output);
+            case "addNewBusinessAssociate" -> new AddNewBusinessAssociateCommand();
+            case "changeSpendingLimit" -> new ChangeSpendingLimitCommand();
+            case "businessReport" -> new BusinessReportCommand(objectMapper, output);
             default -> {
                 System.out.println("Unknown command type: " + commandType);
                 yield null; // Return null for unrecognized commands

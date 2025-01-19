@@ -163,6 +163,10 @@ public class PayOnlineCommand implements Command {
                         return;
                     }
 
+                    Commerciant commerciantForBussiness = Commerciant.getMerchantByName(command.getCommerciant());
+                    account.addCommerciantTransaction(commerciantForBussiness.getName(), command.getAmount());
+                    account.addSpent(command.getEmail(), command.getAmount());
+
                     // Apply the correct cashback strategy
                     CashbackStrategy cashbackStrategy;
                     if (commerciant.getCashbackType().equals("nrOfTransactions")) {
@@ -174,13 +178,20 @@ public class PayOnlineCommand implements Command {
                                 0.0
                         );
                     } else if (commerciant.getCashbackType().equals("spendingThreshold")) {
+                        account.addMerchantSpending(commerciant.getName(), amountInRON); // nu am inteles cerinta, asta e daca se contorizeaza pe merchant
+                        account.incrementTotalSpentOnTresholdCashback(amountInRON); // asta e daca se contorizeaza pe toate spendingurile (o sa vad din teste, sper sa nu uit pe aia gresita)
                         cashbackStrategy = new SpendingThresholdStrategy(payingUser);
                         cashback = cashbackStrategy.calculateCashback(
                                 command.getAmount(),
                                 commerciant.getCategory(),
                                 0,
-                                amountInRON
+                                account.getTotalSpentOnTresholdCashback()
                         );
+
+                        if(command.getTimestamp() == 261){
+                            System.out.println("Cashback is: " + cashback);
+                            System.out.println("Total spending is: " + account.getTotalSpentOnTresholdCashback());
+                        }
 
                         // Convert cashback to the account's currency
                         if (!command.getCurrency().equals(account.getCurrency())) {
@@ -196,17 +207,13 @@ public class PayOnlineCommand implements Command {
                             }
                         }
 
-                        account.addMerchantSpending(commerciant.getName(), command.getAmount());
                     }
                     if(command.getTimestamp() == 5){
-                        System.out.println("Cashback is " + cashback);
+                        System.out.println("Total spending for Zara: " + account.getMerchantSpending( "Zara"));
                     }
                     // Apply cashback and perform the payment
                     double finalAmount = totalAmountToDeduct - cashback;
                     account.removeFunds(finalAmount);
-                    if(command.getTimestamp() == 5){
-                        System.out.println("Final amount is " + finalAmount);
-                    }
 
                     // Add payment operation
                     if (finalAmount > 0) {
