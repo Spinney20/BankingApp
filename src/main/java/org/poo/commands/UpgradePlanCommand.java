@@ -1,10 +1,14 @@
 package org.poo.commands;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.commandPattern.Command;
 import org.poo.currencyExchange.ExchangeRateManager;
 import org.poo.data.Account;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
+import org.poo.operationTypes.FailOperation;
 import org.poo.operationTypes.UpgradePlanOperation;
 
 import java.util.List;
@@ -12,13 +16,18 @@ import java.util.List;
 public class UpgradePlanCommand implements Command {
 
     private final ExchangeRateManager exchangeRateManager;
+    private final ObjectMapper objectMapper;
+    private final ArrayNode output;
 
-    public UpgradePlanCommand(ExchangeRateManager exchangeRateManager) {
+    public UpgradePlanCommand(ExchangeRateManager exchangeRateManager, ObjectMapper objectMapper, ArrayNode output) {
         this.exchangeRateManager = exchangeRateManager;
+        this.objectMapper = objectMapper;
+        this.output = output;
     }
 
     @Override
     public void execute(List<User> users, CommandInput command) {
+        ObjectNode outputNode = objectMapper.createObjectNode();
         String newPlanType = command.getNewPlanType();
         String accountIban = command.getAccount();
 
@@ -38,16 +47,31 @@ public class UpgradePlanCommand implements Command {
         }
 
         if (upgradingUser == null) {
-            System.out.println("{\"description\": \"Account not found\", \"timestamp\": " + command.getTimestamp() + "}");
+            outputNode.put("command", "upgradePlan");
+            ObjectNode errorNode = objectMapper.createObjectNode();
+            errorNode.put("description", "Account not found");
+            errorNode.put("timestamp", command.getTimestamp());
+            outputNode.set("output", errorNode);
+            outputNode.put("timestamp", command.getTimestamp());
+            output.add(outputNode);
+            return;
+        }
+
+        if(targetAccount == null) {
+            outputNode.put("command", "upgradePlan");
+            ObjectNode errorNode = objectMapper.createObjectNode();
+            errorNode.put("description", "Account not found");
+            errorNode.put("timestamp", command.getTimestamp());
+            outputNode.set("output", errorNode);
+            outputNode.put("timestamp", command.getTimestamp());
+            output.add(outputNode);
             return;
         }
 
         // Check for downgrade attempt or invalid plan
         String currentPlan = upgradingUser.getCurrentPlanName();
-        String upgradeResult = upgradingUser.upgradePlan(newPlanType);
 
-        if (upgradeResult.startsWith("Invalid") || upgradeResult.startsWith("The user already")) {
-            System.out.println("{\"description\": \"" + upgradeResult + "\", \"timestamp\": " + command.getTimestamp() + "}");
+        if (currentPlan.equals(newPlanType)) {
             return;
         }
 
@@ -68,11 +92,16 @@ public class UpgradePlanCommand implements Command {
 
         // Check if the account has sufficient funds
         if (targetAccount.getBalance() < feeInAccountCurrency) {
-            System.out.println("{\"description\": \"Insufficient funds\", \"timestamp\": " + command.getTimestamp() + "}");
+            FailOperation failOperation = new FailOperation(
+                    command.getTimestamp(),
+                    "Insufficient funds"
+            );
+            targetAccount.addOperation(failOperation);
             return;
         }
 
         // Deduct fee and complete the upgrade
+        upgradingUser.upgradePlan(newPlanType);
         targetAccount.removeFunds(feeInAccountCurrency);
 
         // Add upgrade operation to the account

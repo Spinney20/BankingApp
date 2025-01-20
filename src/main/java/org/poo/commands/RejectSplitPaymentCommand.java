@@ -68,9 +68,6 @@ public class RejectSplitPaymentCommand implements Command {
             generateOutput(e.getMessage(), command.getTimestamp());
             return;
         }
-
-        // 4) Output "One user rejected the payment."
-        generateOutput("One user rejected the payment.", command.getTimestamp());
     }
 
     private User findUserByEmail(List<User> users, String email) {

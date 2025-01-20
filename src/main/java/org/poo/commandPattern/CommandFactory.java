@@ -47,7 +47,7 @@ public class CommandFactory {
             case "addInterest" -> new AddInterestCommand(objectMapper, output);
             case "withdrawSavings" -> new WithdrawSavingsCommand(objectMapper, output,
                     exchangeRateManager);
-            case "upgradePlan" -> new UpgradePlanCommand(exchangeRateManager);
+            case "upgradePlan" -> new UpgradePlanCommand(exchangeRateManager, objectMapper, output);
             case "cashWithdrawal" -> new CashWithdrawalCommand(exchangeRateManager, objectMapper, output);
             case "acceptSplitPayment" -> new AcceptSplitPaymentCommand(objectMapper, output);
             case "rejectSplitPayment" -> new RejectSplitPaymentCommand(objectMapper, output);
