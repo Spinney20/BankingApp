@@ -2,6 +2,7 @@ package org.poo.commands;
 
 import org.poo.commandPattern.Command;
 import org.poo.data.Account;
+import org.poo.data.Commerciant;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 import org.poo.operationTypes.DeleteCardOperation;
@@ -19,7 +20,7 @@ public class DeleteCardCommand implements Command {
      * @param command - the command to be executed
      */
     @Override
-    public void execute(final List<User> users, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
         // Iterate through users
         for (User user : users) {
             if (user.getEmail().equals(command.getEmail())) {

@@ -3,6 +3,7 @@ package org.poo.commands;
 import org.poo.commandPattern.Command;
 import org.poo.currencyExchange.ExchangeRateManager;
 import org.poo.data.Account;
+import org.poo.data.Commerciant;
 import org.poo.factories.AccountFactory;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
@@ -39,7 +40,7 @@ public class AddAccountCommand implements Command {
      * @param command - The command input containing account details.
      */
     @Override
-    public void execute(final List<User> users, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
 
         for (User user : users) { // Search for the user
             if (user.getEmail().equals(command.getEmail())) {

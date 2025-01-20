@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.commandPattern.Command;
 import org.poo.data.Account;
+import org.poo.data.Commerciant;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 import org.poo.splitManager.SplitPaymentManager;
@@ -28,11 +29,18 @@ public class RejectSplitPaymentCommand implements Command {
     }
 
     @Override
-    public void execute(List<User> users, CommandInput command) {
+    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput command) {
+        ObjectNode outputNode = objectMapper.createObjectNode();
         // 1) Find the user
         User user = findUserByEmail(users, command.getEmail());
         if (user == null) {
-            generateOutput("User not found", command.getTimestamp());
+            outputNode.put("command", "rejectSplitPayment");
+            ObjectNode errorNode = objectMapper.createObjectNode();
+            errorNode.put("description", "User not found");
+            errorNode.put("timestamp", command.getTimestamp());
+            outputNode.set("output", errorNode);
+            outputNode.put("timestamp", command.getTimestamp());
+            output.add(outputNode);
             return;
         }
 

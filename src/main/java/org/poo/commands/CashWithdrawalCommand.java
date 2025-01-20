@@ -7,6 +7,7 @@ import org.poo.commandPattern.Command;
 import org.poo.currencyExchange.ExchangeRateManager;
 import org.poo.data.Account;
 import org.poo.data.Card;
+import org.poo.data.Commerciant;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 import org.poo.operationTypes.CashWithdrawalOperation;
@@ -29,7 +30,7 @@ public class CashWithdrawalCommand implements Command {
     }
 
     @Override
-    public void execute(final List<User> users, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
         String cardNumber = command.getCardNumber();
         String userEmail = command.getEmail();
         double withdrawalAmountRON = command.getAmount(); // Withdrawal amount is in RON

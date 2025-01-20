@@ -37,7 +37,7 @@ public class PayOnlineCommand implements Command {
     }
 
     @Override
-    public void execute(final List<User> users, final CommandInput command) {
+    public void execute(final List<User> users,final List<Commerciant> commerciants, final CommandInput command) {
         User payingUser = null;
 
         // Find the user
@@ -207,9 +207,6 @@ public class PayOnlineCommand implements Command {
                             }
                         }
 
-                    }
-                    if(command.getTimestamp() == 5){
-                        System.out.println("Total spending for Zara: " + account.getMerchantSpending( "Zara"));
                     }
                     // Apply cashback and perform the payment
                     double finalAmount = totalAmountToDeduct - cashback;

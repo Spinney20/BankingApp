@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.commandPattern.Command;
 import org.poo.data.Account;
+import org.poo.data.Commerciant;
 import org.poo.data.Operation;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
@@ -32,7 +33,7 @@ public class Report implements Command {
      * @param command - the command to be executed
      */
     @Override
-    public void execute(final List<User> users, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
         Account targetAccount = null;
 
         // Finding the acc
@@ -166,7 +167,22 @@ public class Report implements Command {
                                 objectMapper.getNodeFactory().
                                         textNode(splitPaymentFailOperation.getSplitPaymentType()));
                         break;
-
+                    case "upgradePlan":
+                        UpgradePlanOperation upgradePlanOperation = (UpgradePlanOperation) operation;
+                        operationNode.put("accountIBAN", upgradePlanOperation.getAccountIBAN());
+                        operationNode.put("newPlanType", upgradePlanOperation.getNewPlanType());
+                        operationNode.put("description", "Upgrade plan");
+                        break;
+                    case "addInterest":
+                        AddInterestOperation addInterestOperation = (AddInterestOperation) operation;
+                        operationNode.put("amount", addInterestOperation.getAmount());
+                        operationNode.put("currency", addInterestOperation.getCurrency());
+                        operationNode.put("description", addInterestOperation.getDescription());
+                        break;
+                    case "info":
+                        InfoOperation infoOperation = (InfoOperation) operation;
+                        operationNode.put("description", infoOperation.getDescription());
+                        break;
                     default:
                         operationNode.put("description", "Unknown operation type");
                 }

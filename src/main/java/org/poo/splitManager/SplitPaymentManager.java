@@ -73,8 +73,15 @@ public class SplitPaymentManager {
      * Marks the split as rejected and removes it from the pending list.
      */
     public void rejectSplit(SplitPaymentState state) {
+        String msg = "One user rejected the payment.";
+
+        Operation op = state.getPendingOperation();
+        op.setError(msg);
         state.reject();
-        cancelPendingOperation(state);
+        for (Account acc : state.getAllAccounts()) {
+            acc.removePendingOperation(op);
+            acc.addOperation(op);
+        }
         pendingSplits.remove(state);
     }
 

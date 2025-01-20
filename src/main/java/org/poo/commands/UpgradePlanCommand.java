@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.commandPattern.Command;
 import org.poo.currencyExchange.ExchangeRateManager;
 import org.poo.data.Account;
+import org.poo.data.Commerciant;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 import org.poo.operationTypes.FailOperation;
@@ -26,7 +27,7 @@ public class UpgradePlanCommand implements Command {
     }
 
     @Override
-    public void execute(List<User> users, CommandInput command) {
+    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput command) {
         ObjectNode outputNode = objectMapper.createObjectNode();
         String newPlanType = command.getNewPlanType();
         String accountIban = command.getAccount();
@@ -71,7 +72,13 @@ public class UpgradePlanCommand implements Command {
         // Check for downgrade attempt or invalid plan
         String currentPlan = upgradingUser.getCurrentPlanName();
 
-        if (currentPlan.equals(newPlanType)) {
+        if (currentPlan.equalsIgnoreCase(newPlanType)) {
+            FailOperation failOperation = new FailOperation(
+                    command.getTimestamp(),
+                    "The user already has the silver plan."
+            );
+            targetAccount.addOperation(failOperation);
+            System.out.println("Am intrat aici");
             return;
         }
 

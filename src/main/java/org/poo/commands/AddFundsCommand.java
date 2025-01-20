@@ -3,6 +3,7 @@ package org.poo.commands;
 import org.poo.commandPattern.Command;
 import org.poo.data.Account;
 import org.poo.accountTypes.BusinessAccount;
+import org.poo.data.Commerciant;
 import org.poo.operationTypes.FailOperation;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
@@ -19,7 +20,7 @@ public class AddFundsCommand implements Command {
      * 4) If limit not exceeded, we add funds and add a deposit operation.
      */
     @Override
-    public void execute(final List<User> users, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
         // 1) Find the user by email
         User depositUser = null;
         for (User user : users) {

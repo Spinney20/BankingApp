@@ -1,6 +1,7 @@
 package org.poo.commandPattern;
 
 import org.poo.data.User;
+import org.poo.data.Commerciant;
 import org.poo.fileio.CommandInput;
 
 import java.util.List;
@@ -18,5 +19,5 @@ public interface Command {
      * @param users - list of users
      * @param command - the command to be executed
      */
-    void execute(List<User> users, CommandInput command);
+    void execute(List<User> users, List<Commerciant> commerciants , CommandInput command);
 }

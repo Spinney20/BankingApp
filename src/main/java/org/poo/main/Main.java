@@ -123,7 +123,7 @@ public final class Main {
 
         // Here is where the magic happens - executing the commands
         for (CommandInput command : inputData.getCommands()) {
-            invoker.executeCommand(command.getCommand(), users, command);
+            invoker.executeCommand(command.getCommand(), users, commerciants, command);
         }
 
         // Writing the output to the file

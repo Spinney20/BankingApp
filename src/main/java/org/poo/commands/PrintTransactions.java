@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.commandPattern.Command;
 import org.poo.data.Account;
+import org.poo.data.Commerciant;
 import org.poo.data.Operation;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
@@ -34,7 +35,7 @@ public class PrintTransactions implements Command {
      * @param command - the command to be executed
      */
     @Override
-    public void execute(final List<User> users, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
         User userWithTransactions = null;
 
         // Find the user
@@ -232,9 +233,6 @@ public class PrintTransactions implements Command {
 
                         break;
                     }
-
-
-
                     case "info":
                         InfoOperation infoOperation = (InfoOperation) operation;
                         operationNode.put("description", infoOperation.getDescription());
@@ -261,6 +259,13 @@ public class PrintTransactions implements Command {
                         operationNode.put("amount", addInterestOperation.getAmount());
                         operationNode.put("currency", addInterestOperation.getCurrency());
                         operationNode.put("description", addInterestOperation.getDescription());
+                        break;
+                    case "withdrawSav":
+                        WithdrawSavingsOperation transaction2 = (WithdrawSavingsOperation) operation;
+                        operationNode.put("classicAccountIBAN", transaction2.getReceiverIBAN());
+                        operationNode.put("description", transaction2.getDescription());
+                        operationNode.put("savingsAccountIBAN", transaction2.getSenderIBAN());
+                        operationNode.put("amount", transaction2.getAmount());
                         break;
                     default:
                         break;

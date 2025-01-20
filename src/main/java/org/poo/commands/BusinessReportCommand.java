@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.commandPattern.Command;
 import org.poo.accountTypes.BusinessAccount;
 import org.poo.data.Account;
+import org.poo.data.Commerciant;
 import org.poo.data.Stats;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
@@ -25,7 +26,7 @@ public class BusinessReportCommand implements Command {
     }
 
     @Override
-    public void execute(List<User> users, CommandInput cmd) {
+    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput cmd) {
         String accountIban = cmd.getAccount();
         String reportType = cmd.getType(); // "transaction" or "commerciant"
         int startTimestamp = cmd.getStartTimestamp();

@@ -70,39 +70,4 @@ public class SplitCustomPaymentOperation extends Operation {
     public void setError(String error) {
         this.error = error;
     }
-
-    /**
-     * Convert this operation to JSON for printing or logs.
-     * The "error" field only appears if 'error' is non-null/empty.
-     */
-    public ObjectNode toJson(ObjectMapper mapper) {
-        ObjectNode node = mapper.createObjectNode();
-
-        // amountForUsers => array
-        ArrayNode amountsArray = mapper.createArrayNode();
-        for (Double value : amountForUsers) {
-            amountsArray.add(value);
-        }
-        node.set("amountForUsers", amountsArray);
-
-        node.put("currency", currency);
-        node.put("description", description);
-
-        // if there's an error, include it
-        if (error != null && !error.isEmpty()) {
-            node.put("error", error);
-        }
-
-        // involvedAccounts => array
-        ArrayNode accountsArray = mapper.createArrayNode();
-        for (String iban : involvedAccounts) {
-            accountsArray.add(iban);
-        }
-        node.set("involvedAccounts", accountsArray);
-
-        node.put("splitPaymentType", splitPaymentType);
-        node.put("timestamp", timestamp);
-
-        return node;
-    }
 }

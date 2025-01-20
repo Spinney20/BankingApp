@@ -6,11 +6,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.commandPattern.Command;
 import org.poo.currencyExchange.ExchangeRateManager;
 import org.poo.data.Account;
+import org.poo.data.Commerciant;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 import org.poo.operationTypes.FailOperation;
 import org.poo.operationTypes.TransactionOperation;
 import org.poo.operationTypes.WithdrawSavingsFailOperation;
+import org.poo.operationTypes.WithdrawSavingsOperation;
 
 import java.util.List;
 
@@ -26,7 +28,7 @@ public class WithdrawSavingsCommand implements Command {
     }
 
     @Override
-    public void execute(List<User> users, CommandInput command) {
+    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput command) {
         ObjectNode commandOutput = objectMapper.createObjectNode();
         commandOutput.put("command", "withdrawSavings");
         commandOutput.put("timestamp", command.getTimestamp());
@@ -84,12 +86,11 @@ public class WithdrawSavingsCommand implements Command {
         }
 
         if (classicAccount == null) {
-            // Dacă nu există cont de tip "classic", adaugă operațiunea de eșec
-            WithdrawSavingsFailOperation failOperation = new WithdrawSavingsFailOperation(
+            FailOperation failOperation = new FailOperation(
                     command.getTimestamp(),
                     "You do not have a classic account."
             );
-            currentUser.getAccounts().get(0).addOperation(failOperation); // Sau un cont implicit
+            savingsAccount.addOperation(failOperation);
             return;
         }
 
@@ -120,7 +121,7 @@ public class WithdrawSavingsCommand implements Command {
         classicAccount.addFunds(command.getAmount());
 
         // Add operations to the accounts
-        TransactionOperation savingsWithdrawal = new TransactionOperation(
+        WithdrawSavingsOperation savingsWithdrawal = new WithdrawSavingsOperation(
                 command.getTimestamp(),
                 "Savings withdrawal",
                 savingsAccount.getIban(),
@@ -131,21 +132,16 @@ public class WithdrawSavingsCommand implements Command {
         );
         savingsAccount.addOperation(savingsWithdrawal);
 
-        TransactionOperation classicDeposit = new TransactionOperation(
+        // Add operations to the accounts
+        WithdrawSavingsOperation classicDeposit = new WithdrawSavingsOperation(
                 command.getTimestamp(),
-                "Deposit from savings",
+                "Savings withdrawal",
                 savingsAccount.getIban(),
                 classicAccount.getIban(),
-                command.getAmount(),
-                classicAccount.getCurrency(),
-                "deposit"
+                convertedAmount,
+                savingsAccount.getCurrency(),
+                "withdrawal"
         );
         classicAccount.addOperation(classicDeposit);
-
-        // Add success response
-        ObjectNode successOutput = objectMapper.createObjectNode();
-        successOutput.put("description", "Savings withdrawal");
-        commandOutput.set("output", successOutput);
-        output.add(commandOutput);
     }
 }

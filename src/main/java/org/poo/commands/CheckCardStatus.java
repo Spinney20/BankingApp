@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.poo.commandPattern.Command;
 import org.poo.data.Account;
 import org.poo.data.Card;
+import org.poo.data.Commerciant;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 import org.poo.operationTypes.CheckCardStatusOperation;
@@ -31,7 +32,7 @@ public class CheckCardStatus implements Command {
      * @param command the command to be executed
      */
     @Override
-    public void execute(final List<User> users, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
         boolean cardExists = false;
 
         for (User user : users) {

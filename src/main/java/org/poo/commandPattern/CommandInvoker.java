@@ -2,6 +2,7 @@ package org.poo.commandPattern;
 
 import java.util.List;
 
+import org.poo.data.Commerciant;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 
@@ -18,12 +19,12 @@ public class CommandInvoker {
      * @param users - the list of users
      * @param command - the command input
      */
-    public void executeCommand(final String commandType, final List<User> users,
+    public void executeCommand(final String commandType, final List<User> users, final List<Commerciant> commerciants,
                                final CommandInput command) {
         Command cmd = commandFactory.createCommand(commandType);
         if(cmd == null) {
             return;
         }
-        cmd.execute(users, command);
+        cmd.execute(users, commerciants, command);
     }
 }

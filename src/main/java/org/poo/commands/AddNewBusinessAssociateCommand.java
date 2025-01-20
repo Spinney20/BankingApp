@@ -3,6 +3,7 @@ package org.poo.commands;
 import org.poo.commandPattern.Command;
 import org.poo.data.Account;
 import org.poo.accountTypes.BusinessAccount;
+import org.poo.data.Commerciant;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 
@@ -11,7 +12,7 @@ import java.util.List;
 public class AddNewBusinessAssociateCommand implements Command {
 
     @Override
-    public void execute(List<User> users, CommandInput command) {
+    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput command) {
         String accountIban = command.getAccount();
         String newAssociateEmail = command.getEmail();
         String role = command.getRole();
