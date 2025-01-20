@@ -12,6 +12,7 @@ import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
@@ -110,8 +111,11 @@ public class BusinessReportCommand implements Command {
         output.add(node);
     }
 
-    private void generateCommerciantReport(CommandInput cmd, BusinessAccount businessAccount, List<User> users,
-                                           int startTimestamp, int endTimestamp) {
+    private void generateCommerciantReport(CommandInput cmd,
+                                           BusinessAccount businessAccount,
+                                           List<User> users,
+                                           int startTimestamp,
+                                           int endTimestamp) {
         ObjectNode node = objectMapper.createObjectNode();
         node.put("command", "businessReport");
         node.put("timestamp", cmd.getTimestamp());
@@ -126,7 +130,13 @@ public class BusinessReportCommand implements Command {
         outputNode.put("deposit limit", businessAccount.getGlobalDepositLimit());
         outputNode.put("statistics type", "commerciant");
 
+        // A) Summaries:
         Map<String, Double> commerciantTransactions = businessAccount.getCommerciants();
+
+        // B) Detailed userSpent:
+        Map<String, Map<String, Double>> userSpentOnCommerciant = businessAccount.getUserSpentOnCommerciant();
+        // C) Our new userTxCount
+        Map<String, Map<String, Integer>> userTxCountOnCommerciant = businessAccount.getUserTxCountOnCommerciant();
 
         for (Map.Entry<String, Double> entry : commerciantTransactions.entrySet()) {
             String commerciantName = entry.getKey();
@@ -139,16 +149,44 @@ public class BusinessReportCommand implements Command {
             ArrayNode managersArray = objectMapper.createArrayNode();
             ArrayNode employeesArray = objectMapper.createArrayNode();
 
-            for (Map.Entry<String, String> associate : businessAccount.getAssociates().entrySet()) {
-                String email = associate.getKey();
-                String role = associate.getValue();
-                User user = findUserByEmail(users, email);
+            // B) For the sums
+            Map<String, Double> userMap = userSpentOnCommerciant.getOrDefault(commerciantName, new HashMap<>());
 
-                if (user != null) {
-                    if ("manager".equals(role)) {
-                        managersArray.add(user.getLastName() + " " + user.getFirstName());
-                    } else if ("employee".equals(role)) {
-                        employeesArray.add(user.getLastName() + " " + user.getFirstName());
+            // C) For the transaction counts
+            Map<String, Integer> txCountMap = userTxCountOnCommerciant.getOrDefault(commerciantName, new HashMap<>());
+
+            // For each user who spent something
+            for (Map.Entry<String, Double> userSpentEntry : userMap.entrySet()) {
+                String email = userSpentEntry.getKey();
+                double spentForThisCommerciant = userSpentEntry.getValue();
+                if (spentForThisCommerciant <= 0) {
+                    continue;
+                }
+
+                // find role
+                String role = businessAccount.getAssociates().get(email);
+                if (role == null) {
+                    // Not an associate => skip, or handle differently
+                    continue;
+                }
+
+                // find user
+                User user = findUserByEmail(users, email);
+                if (user == null) continue;
+
+                String fullName = user.getLastName() + " " + user.getFirstName();
+
+                // transaction count => how many times to insert them
+                int txCount = txCountMap.getOrDefault(email, 0);
+
+                // Add them 'txCount' times
+                if ("manager".equalsIgnoreCase(role)) {
+                    for (int i = 0; i < txCount; i++) {
+                        managersArray.add(fullName);
+                    }
+                } else if ("employee".equalsIgnoreCase(role)) {
+                    for (int i = 0; i < txCount; i++) {
+                        employeesArray.add(fullName);
                     }
                 }
             }
@@ -159,12 +197,15 @@ public class BusinessReportCommand implements Command {
             commerciantsArray.add(commerciantNode);
         }
 
+        // optional sorting
         sortArrayNodeByField(commerciantsArray, "commerciant");
 
         outputNode.set("commerciants", commerciantsArray);
         node.set("output", outputNode);
         output.add(node);
     }
+
+
 
     private User findUserByEmail(List<User> users, String email) {
         return users.stream().filter(user -> user.getEmail().equals(email)).findFirst().orElse(null);

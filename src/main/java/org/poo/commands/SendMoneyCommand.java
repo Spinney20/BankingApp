@@ -3,6 +3,9 @@ package org.poo.commands;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.poo.cashbackStrategy.CashbackStrategy;
+import org.poo.cashbackStrategy.NrOfTransactionsStrategy;
+import org.poo.cashbackStrategy.SpendingThresholdStrategy;
 import org.poo.commandPattern.Command;
 import org.poo.currencyExchange.ExchangeRateManager;
 import org.poo.data.Account;
@@ -73,7 +76,6 @@ public class SendMoneyCommand implements Command {
         }
         // Handle account not found case
         if (fromAccount == null) {
-            addOutputToJson("User not found", command.getTimestamp());
             return;
         }
 
@@ -157,6 +159,57 @@ public class SendMoneyCommand implements Command {
             // Deduct funds from sender
             fromAccount.removeFunds(command.getAmount());
 
+            // 1) Convert 'command.getAmount()' from fromAccount currency -> RON for commission/cashback
+            double transactionAmountInRON = command.getAmount();
+            if (!fromAccount.getCurrency().equalsIgnoreCase("RON")) {
+                double exRate = exchangeRateManager.getExchangeRate(
+                        fromAccount.getCurrency(),
+                        "RON"
+                );
+                if (exRate != -1) {
+                    transactionAmountInRON = command.getAmount() * exRate;
+                }
+            }
+
+            // 2) Apply commission
+            double commission = senderUser.applyCommission(transactionAmountInRON);
+
+            // 3) Convert commission back to fromAccount currency
+            double commissionInSenderCurrency = commission;
+            if (!fromAccount.getCurrency().equalsIgnoreCase("RON")) {
+                double reverseExRate = exchangeRateManager.getExchangeRate("RON", fromAccount.getCurrency());
+                if (reverseExRate != -1) {
+                    commissionInSenderCurrency = commission * reverseExRate;
+                } else {
+                    commissionInSenderCurrency = 0.0;
+                }
+            }
+
+            fromAccount.removeFunds(commissionInSenderCurrency);
+
+            double cashback = 0.0;
+            CashbackStrategy cashbackStrategy;
+            if(potentialCommerciant.getCashbackType().equalsIgnoreCase("nrOfTransactions")) {
+                cashbackStrategy = new NrOfTransactionsStrategy(fromAccount);
+                cashback = cashbackStrategy.calculateCashback(
+                        command.getAmount(),
+                        potentialCommerciant.getCategory(),
+                        potentialCommerciant.incrementAndGetTransactionCount(fromAccount),
+                        0.0
+                );
+            } else {
+                cashbackStrategy = new SpendingThresholdStrategy(senderUser);
+                cashback = cashbackStrategy.calculateCashback(
+                        command.getAmount(),
+                        potentialCommerciant.getCategory(),
+                        0,
+                        transactionAmountInRON
+                );
+            }
+
+            // Add funds to receiver
+            fromAccount.addFunds(cashback);
+
             // Create transaction operation for sender
             TransactionOperation senderTransaction = new TransactionOperation(
                     command.getTimestamp(),
@@ -169,6 +222,7 @@ public class SendMoneyCommand implements Command {
             );
 
             fromAccount.addOperation(senderTransaction);
+            fromAccount.addCommerciantTransaction(potentialCommerciant.getName(), command.getAmount(), senderUser.getEmail());
         }
     }
 

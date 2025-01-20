@@ -318,7 +318,7 @@ public abstract class Account {
     }
 
 
-    public void addCommerciantTransaction(String merchantName, double amount) {
+    public void addCommerciantTransaction(String merchantName, double amount, String userEmail) {
         // nu face nimic pentru conturile care nu sunt de tip business
     }
 

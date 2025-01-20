@@ -3,6 +3,7 @@ package org.poo.commands;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.poo.accountTypes.BusinessAccount;
 import org.poo.cashbackStrategy.CashbackStrategy;
 import org.poo.cashbackStrategy.NrOfTransactionsStrategy;
 import org.poo.cashbackStrategy.SpendingThresholdStrategy;
@@ -164,8 +165,14 @@ public class PayOnlineCommand implements Command {
                     }
 
                     Commerciant commerciantForBussiness = Commerciant.getMerchantByName(command.getCommerciant());
-                    account.addCommerciantTransaction(commerciantForBussiness.getName(), command.getAmount());
-                    account.addSpent(command.getEmail(), command.getAmount());
+                    if (account.isBusinessAccount()) {
+                        BusinessAccount bAcc = (BusinessAccount) account;
+                        // if not bAcc.isAssociate(...), we skip
+                        if (bAcc.isAssociate(payingUser.getEmail())) {
+                            account.addCommerciantTransaction(commerciantForBussiness.getName(), amountInAccountCurrency, command.getEmail());
+                        }
+                    }
+                    account.addSpent(command.getEmail(), amountInAccountCurrency);
 
                     // Apply the correct cashback strategy
                     CashbackStrategy cashbackStrategy;

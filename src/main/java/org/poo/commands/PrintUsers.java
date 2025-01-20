@@ -43,7 +43,15 @@ public class PrintUsers implements Command {
 
             ArrayNode accountsNode = objectMapper.createArrayNode();
             if (user.getAccounts() != null) {
+
                 for (Account account : user.getAccounts()) {
+                    if (account.isBusinessAccount()) {
+                        org.poo.accountTypes.BusinessAccount businessAccount = (org.poo.accountTypes.BusinessAccount) account;
+
+                        if (!businessAccount.isOwner(user.getEmail())) {
+                            continue;
+                        }
+                    }
                     ObjectNode accountNode = objectMapper.createObjectNode();
                     accountNode.put("IBAN", account.getIban());
                     accountNode.put("balance", account.getBalance());

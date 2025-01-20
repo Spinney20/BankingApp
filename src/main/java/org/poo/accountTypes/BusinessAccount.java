@@ -6,6 +6,7 @@ import org.poo.data.Stats;
 import org.poo.data.User;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class BusinessAccount extends Account {
@@ -14,6 +15,11 @@ public class BusinessAccount extends Account {
     private static final double DEFAULT_LIMIT = 500.0;
     private Map<String, Double> commerciants;
     private final Map<String, Stats> statsMap;
+    // Key: commerciantName, Value: Map<userEmail -> totalSpentByThatUserOnThisCommerciant>
+    private Map<String, Map<String, Double>> userSpentOnCommerciant = new LinkedHashMap<>();
+    // For each merchantName, we keep a map of (userEmail -> integer # of transactions)
+    private Map<String, Map<String, Integer>> userTxCountOnCommerciant = new LinkedHashMap<>();
+
 
     private double globalSpendingLimit; // Global spending limit in account's currency
     private double globalDepositLimit;  // Global deposit limit in account's currency
@@ -21,9 +27,11 @@ public class BusinessAccount extends Account {
     public BusinessAccount(String iban, String currency, String ownerEmail,  ExchangeRateManager exchangeRateManager) {
         super(iban, currency);
         this.ownerEmail = ownerEmail;
-        this.associates = new HashMap<>();
+        this.associates = new LinkedHashMap<>();
         this.commerciants = new HashMap<>();
         this.statsMap = new HashMap<>();
+        this.userSpentOnCommerciant = new LinkedHashMap<>();
+        this.userTxCountOnCommerciant = new LinkedHashMap<>();
 
         this.globalSpendingLimit = convertDefaultLimit(exchangeRateManager, DEFAULT_LIMIT, currency);
         this.globalDepositLimit = convertDefaultLimit(exchangeRateManager, DEFAULT_LIMIT, currency);
@@ -103,9 +111,21 @@ public class BusinessAccount extends Account {
     }
 
     @Override
-    public void addCommerciantTransaction(String commerciantName, double amount) {
+    public void addCommerciantTransaction(String commerciantName, double amount, String userEmail) {
 
-        commerciants.put(commerciantName, commerciants.getOrDefault(commerciantName, 0.0) + amount);
+        // increment total for the entire business
+        commerciants.put(commerciantName,
+                commerciants.getOrDefault(commerciantName, 0.0) + amount
+        );
+
+        // also record user-specific spending:
+        userSpentOnCommerciant.putIfAbsent(commerciantName, new LinkedHashMap<>());
+        Map<String, Double> userMap = userSpentOnCommerciant.get(commerciantName);
+        userMap.put(userEmail, userMap.getOrDefault(userEmail, 0.0) + amount);
+
+        userTxCountOnCommerciant.putIfAbsent(commerciantName, new LinkedHashMap<>());
+        Map<String, Integer> txCountMap = userTxCountOnCommerciant.get(commerciantName);
+        txCountMap.put(userEmail, txCountMap.getOrDefault(userEmail, 0) + 1);
     }
 
     public Map<String, Double> getCommerciants() {
@@ -165,4 +185,13 @@ public class BusinessAccount extends Account {
         role = role.trim(); // remove extra spaces just in case
         return role.equalsIgnoreCase("employee");
     }
+
+    public Map <String, Map<String, Double>> getUserSpentOnCommerciant() {
+        return userSpentOnCommerciant;
+    }
+
+    public Map<String, Map<String, Integer>> getUserTxCountOnCommerciant() {
+        return userTxCountOnCommerciant;
+    }
+
 }
