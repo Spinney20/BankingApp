@@ -26,6 +26,16 @@ public class BusinessReportCommand implements Command {
         this.output = output;
     }
 
+    /***
+     * Generates a business report for a business account.
+     * The report can be of two types:
+     * - "transaction" - shows the total amount spent and deposited by each associate
+     *  and the total amount spent and deposited by all associates
+     *  - "commerciant" - shows the total amount received from each commerciant
+     * @param users - list of users
+     * @param commerciants
+     * @param cmd - the command to be executed
+     */
     @Override
     public void execute(final List<User> users, final List<Commerciant> commerciants,
                         final CommandInput cmd) {

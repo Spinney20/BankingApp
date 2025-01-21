@@ -16,6 +16,11 @@ import java.util.List;
 
 public class UpgradePlanCommand implements Command {
 
+    // Named constants to avoid magic numbers:
+    private static final double UPGRADE_FEE_TO_SILVER = 100.0;
+    private static final double UPGRADE_FEE_SILVER_TO_GOLD = 250.0;
+    private static final double UPGRADE_FEE_DIRECT_TO_GOLD = 350.0;
+
     private final ExchangeRateManager exchangeRateManager;
     private final ObjectMapper objectMapper;
     private final ArrayNode output;
@@ -27,6 +32,14 @@ public class UpgradePlanCommand implements Command {
         this.output = output;
     }
 
+    /***
+     * Upgrades the plan of a user.
+     * If the account is not found, an error is added to the output
+     * If the account does not have enough funds, an error is added to the output
+     * @param users - list of users
+     * @param commerciants
+     * @param command - the command to be executed
+     */
     @Override
     public void execute(final List<User> users, final List<Commerciant> commerciants,
                         final CommandInput command) {
@@ -134,19 +147,17 @@ public class UpgradePlanCommand implements Command {
      */
     private double determineUpgradeFee(final String currentPlan, final String newPlanType) {
         // Normalize plan names
-        String normalizedCurrentPlan
-                = currentPlan.replace("PlanDecorator", "").toLowerCase();
+        String normalizedCurrentPlan = currentPlan.replace("PlanDecorator", "").toLowerCase();
         String normalizedNewPlanType = newPlanType.toLowerCase();
 
         if ((normalizedCurrentPlan.equals("standard") || normalizedCurrentPlan.equals("student"))
                 && normalizedNewPlanType.equals("silver")) {
-            return 100.0;
+            return UPGRADE_FEE_TO_SILVER; // used to be 100.0
         } else if (normalizedCurrentPlan.equals("silver") && normalizedNewPlanType.equals("gold")) {
-            return 250.0;
-        } else if ((normalizedCurrentPlan.equals("standard")
-                || normalizedCurrentPlan.equals("student"))
+            return UPGRADE_FEE_SILVER_TO_GOLD; // used to be 250.0
+        } else if ((normalizedCurrentPlan.equals("standard") || normalizedCurrentPlan.equals("student"))
                 && normalizedNewPlanType.equals("gold")) {
-            return 350.0;
+            return UPGRADE_FEE_DIRECT_TO_GOLD; // used to be 350.0
         }
 
         return 0.0;

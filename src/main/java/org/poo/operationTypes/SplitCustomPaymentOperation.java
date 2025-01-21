@@ -52,6 +52,11 @@ public class SplitCustomPaymentOperation extends Operation {
         this.error = null;  // no error initially
     }
 
+    /***
+     * Getter for the operation type
+     * @return - i have multiple operations in transaction and I have a string to identify each one
+     * as you will see.
+     */
     @Override
     public String getOperationType() {
         // Identifies this operation in your printTransactions switch

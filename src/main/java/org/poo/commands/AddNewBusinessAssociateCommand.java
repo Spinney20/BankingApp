@@ -11,6 +11,14 @@ import java.util.List;
 
 public class AddNewBusinessAssociateCommand implements Command {
 
+    /***
+     * Adds a new associate to a business account.
+     * Associates can be either managers or employees.
+     * basically adds it to the map in the business account
+     * @param users - list of users
+     * @param commerciants
+     * @param command - the command to be executed
+     */
     @Override
     public void execute(final List<User> users, final List<Commerciant> commerciants,
                         final CommandInput command) {

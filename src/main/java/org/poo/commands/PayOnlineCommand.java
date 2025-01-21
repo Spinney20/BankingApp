@@ -35,6 +35,29 @@ public class PayOnlineCommand implements Command {
         this.exchangeRateManager = exchangeRateManager;
     }
 
+    /***
+     * Executes the payOnline command
+     * MOST COMPLEX COMMAND
+     * 1. Find the user
+     * 2. Find the card
+     * 3. Check if the card is frozen
+     * 4. Convert the amount to RON
+     * 5. Calculate the commission in RON
+     * 6. Convert the commission back to the account's currency
+     *  7. Convert the amount back to the account's currency
+     *  8. Check for insufficient funds
+     *  9. Check if balance drops below the minimum balance
+     *  10. Cashback logic
+     *  11. Apply the correct cashback strategy
+     *  12. Apply cashback and perform the payment
+     *  13. Add payment operation
+     *  14. One-time card logic
+     *  15. Add operations
+     *  16. Add output
+     * @param users - list of users
+     * @param commerciants
+     * @param command - the command to be executed
+     */
     @Override
     public void execute(final List<User> users, final List<Commerciant> commerciants,
                         final CommandInput command) {

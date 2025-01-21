@@ -28,6 +28,13 @@ public class RejectSplitPaymentCommand implements Command {
         this.output = output;
     }
 
+    /***
+     * Rejects a split payment.
+     * IF IT IS REJECTED THE PENDING SPLIT PAYMENT IS REMOVED
+     * @param users - list of users
+     * @param commerciants
+     * @param command - the command to be executed
+     */
     @Override
     public void execute(final List<User> users, final List<Commerciant> commerciants,
                         final CommandInput command) {

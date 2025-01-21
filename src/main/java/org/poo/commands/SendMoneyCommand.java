@@ -30,6 +30,13 @@ public class SendMoneyCommand implements Command {
         this.output = output;
     }
 
+    /***
+     * Executes the sendMoney command.
+     * THE RECEIVER CAN BE A USER OR A COMMERCIANT
+     * @param users - list of users
+     * @param commerciants
+     * @param command - the command to be executed
+     */
     @Override
     public void execute(final List<User> users, final List<Commerciant> commerciants,
                         final CommandInput command) {

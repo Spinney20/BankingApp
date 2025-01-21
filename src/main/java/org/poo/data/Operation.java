@@ -23,7 +23,10 @@ public abstract class Operation {
      */
     public abstract String getOperationType();
 
-    // Default or no-op error method:
+    /***
+     * Setter for the error message
+     * @param error - the error message
+     */
     public void setError(final String error) {
         // By default, do nothing
         // Subclasses that need error functionality will override this

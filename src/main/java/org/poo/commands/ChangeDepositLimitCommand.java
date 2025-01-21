@@ -23,6 +23,12 @@ public class ChangeDepositLimitCommand implements Command {
         this.output = output;
     }
 
+    /***
+     * Changes the deposit limit of a business account.
+     * @param users - list of users
+     * @param commerciants
+     * @param command - the command to be executed
+     */
     @Override
     public void execute(final List<User> users, final List<Commerciant> commerciants,
                         final CommandInput command) {

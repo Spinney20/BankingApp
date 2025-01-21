@@ -16,6 +16,11 @@ public class User {
     private List<Account> accounts = new ArrayList<>();
     private TransactionService transactionService; // Decorator for cashback and commission logic
 
+    // Named constants to replace "magic numbers"
+    private static final double SPENDING_THRESHOLD_500 = 500.0;
+    private static final double SPENDING_THRESHOLD_300 = 300.0;
+    private static final double SPENDING_THRESHOLD_100 = 100.0;
+
     // Constructor
     public User(final String firstName, final String lastName, final String email,
                 final LocalDate birthDate, final String occupation) {
@@ -116,16 +121,23 @@ public class User {
         throw new IllegalArgumentException("Account not found.");
     }
 
+    /***
+     * here i basically call the applyCashback method from the transactionService
+     * on spending threshold strategy this is called
+     * @param totalSpending
+     * @param transactionAmount
+     * @return
+     */
     public double applyCashback(double totalSpending, double transactionAmount) {
         // Get the cashback rate based on the total spending threshold and plan
-        if (totalSpending >= 500) {
-            return transactionService.applyCashback(500, transactionAmount);
+        if (totalSpending >= SPENDING_THRESHOLD_500) {
+            return transactionService.applyCashback(SPENDING_THRESHOLD_500, transactionAmount);
         }
-        if (totalSpending >= 300) {
-            return transactionService.applyCashback(300, transactionAmount);
+        if (totalSpending >= SPENDING_THRESHOLD_300) {
+            return transactionService.applyCashback(SPENDING_THRESHOLD_300, transactionAmount);
         }
-        if (totalSpending >= 100) {
-            return transactionService.applyCashback(100, transactionAmount);
+        if (totalSpending >= SPENDING_THRESHOLD_100) {
+            return transactionService.applyCashback(SPENDING_THRESHOLD_100, transactionAmount);
         }
         return 0.0;
     }
@@ -156,6 +168,7 @@ public class User {
         if ((normalizedCurrentPlan.equals("gold") && !newPlanType.equals("gold"))
                 || (normalizedCurrentPlan.equals("silver")
                 && newPlanType.equals("standard"))) {
+
             return "You cannot downgrade your plan.";
         }
 
@@ -163,13 +176,14 @@ public class User {
         switch (newPlanType) {
             case "silver" -> this.transactionService
                     = new SilverPlanDecorator(transactionService);
-            case "gold" -> this.transactionService = new GoldPlanDecorator(transactionService);
-            default -> { return "Invalid plan type: " + newPlanType;
+            case "gold" -> this.transactionService
+                    = new GoldPlanDecorator(transactionService);
+            default -> {
+                return "Invalid plan type: " + newPlanType;
             }
         }
         return "Upgrade successful to " + newPlanType + " plan.";
     }
-
 
     /**
      * Returns the name of the current plan.

@@ -43,6 +43,15 @@ public class SplitPaymentCommand implements Command {
         this.exchangeRateManager = exchangeRateManager;
     }
 
+    /***
+     * Splits a payment between multiple accounts.
+     * The payment can be split equally or custom.
+     * The split is calculated based on the amount provided for each account.
+     * If the account doesn't exist, an error is added to the output.
+     * @param users - list of users
+     * @param commerciants
+     * @param command - the command to be executed
+     */
     @Override
     public void execute(final List<User> users, final List<Commerciant> commerciants,
                         final CommandInput command) {

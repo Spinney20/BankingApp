@@ -52,11 +52,19 @@ public class SplitEqualPaymentOperation extends Operation {
         this.error = null;
     }
 
+    /***
+     * i have multiple operations and I have a string to identify each one
+     * @return
+     */
     @Override
     public String getOperationType() {
         return "SplitPaymentEQUAL";
     }
 
+    /***
+     * Setter for the error message
+     * @param error - the error message
+     */
     @Override
     public void setError(final String error) {
         this.error = error;

@@ -10,6 +10,15 @@ public class SpendingThresholdStrategy implements CashbackStrategy {
         this.user = user;
     }
 
+    /***
+     * This is the method that calculates the cashback
+     * but i basically pass it to the user to apply it xD
+     * @param amount - the amount of the transaction
+     * @param category - the category of the transaction
+     * @param transactionCount
+     * @param totalSpending
+     * @return
+     */
     @Override
     public double calculateCashback(final double amount, final String category,
                                     final int transactionCount, final double totalSpending) {

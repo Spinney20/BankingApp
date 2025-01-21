@@ -14,6 +14,13 @@ import java.util.Map;
  */
 public class EqualSplitPaymentStrategy implements SplitPaymentStrategy {
 
+    /***
+     * Calculate the split for an equal payment.
+     * @param accounts
+     * @param command
+     * @param exchangeRateManager
+     * @return
+     */
     @Override
     public Map<Account, Double> calculateSplit(final List<Account> accounts,
                                                final CommandInput command,

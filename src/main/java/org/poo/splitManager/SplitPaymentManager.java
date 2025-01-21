@@ -14,7 +14,7 @@ import java.util.List;
  *  - Cancels it if any user rejects
  *  - If insufficient funds, it sets the error on the operation and rejects
  */
-public class SplitPaymentManager {
+public final class SplitPaymentManager {
     private static SplitPaymentManager instance;
 
     // A list of all pending splits (not yet finalized or rejected)
@@ -24,6 +24,10 @@ public class SplitPaymentManager {
         this.pendingSplits = new ArrayList<>();
     }
 
+    /***
+     * Singleton pattern
+     * @return
+     */
     public static synchronized SplitPaymentManager getInstance() {
         if (instance == null) {
             instance = new SplitPaymentManager();

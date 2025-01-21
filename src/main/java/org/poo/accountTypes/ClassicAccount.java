@@ -37,6 +37,10 @@ public class ClassicAccount extends Account {
         throw new UnsupportedOperationException("Classic accounts do not support interest rates.");
     }
 
+    /***
+     * I use this to know if the account is a business account
+     * @return - false, because it's not a business account
+     */
     @Override
     public boolean isBusinessAccount() {
         return false;

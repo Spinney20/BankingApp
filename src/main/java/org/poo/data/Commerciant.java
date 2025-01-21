@@ -22,26 +22,51 @@ public class Commerciant {
         merchants.put(name, this);
     }
 
+    /***
+     * getting commerciant by string name
+     * @param name
+     * @return
+     */
     public static Commerciant getMerchantByName(final String name) {
         return merchants.get(name);
     }
 
+    /***
+     * getting category of commerciant
+     * @return
+     */
     public String getCategory() {
         return category;
     }
 
+    /***
+     * getter for cashback type
+     * @return
+     */
     public String getCashbackType() {
         return cashbackType;
     }
 
+    /***
+     * getter for account
+     * @return
+     */
     public String getAccount() {
         return account;
     }
 
+    /***
+     * getter for name
+     * @return
+     */
     public String getName() {
         return name;
     }
 
+    /***
+     * getter for transaction counts
+     * @return
+     */
     public int incrementAndGetTransactionCount(final Account account) {
         int currentCount = transactionCounts.getOrDefault(account, 0);
         transactionCounts.put(account, currentCount + 1);

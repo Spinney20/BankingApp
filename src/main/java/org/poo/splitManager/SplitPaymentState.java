@@ -55,30 +55,61 @@ public class SplitPaymentState {
         this.creationTimestamp = creationTimestamp;
     }
 
+    /***
+     * Getter for split payment type
+     * custom or equal
+     * @return
+     */
     public String getSplitPaymentType() {
         return splitPaymentType;
     }
 
+    /***
+     * getter for all accounts implied
+     * @return
+     */
     public Set<Account> getAllAccounts() {
         return allAccounts;
     }
 
+    /***
+     * getter for the split map
+     * @return
+     */
     public Map<Account, Double> getSplitMap() {
         return splitMap;
     }
 
+    /***
+     * getter for the pending operation
+     * because at first i put it in pending
+     * @return
+     */
     public Operation getPendingOperation() {
         return pendingOperation;
     }
 
+    /***
+     * if the split is rejected, to know if i remove it from pending
+     * @return
+     */
     public boolean isRejected() {
         return rejected;
     }
 
+    /***
+     * if the split is finalized, to know if i remove it from pending
+     * and add it to the account operations
+     * @return
+     */
     public boolean isFinalized() {
         return finalized;
     }
 
+    /***
+     * setter for finalized
+     * @param finalized
+     */
     public void setFinalized(final boolean finalized) {
         this.finalized = finalized;
     }

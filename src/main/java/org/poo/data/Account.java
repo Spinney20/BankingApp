@@ -7,6 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/***
+ * The abstract class for the account
+ * It has the basic fields and methods that are common for all accounts
+ * It also has the abstract methods that are to be implemented in the subclasses
+ * It also has the fields and methods for the cashback feature
+ * It also has the fields and methods for the split payment feature
+ * It also has the fields and methods for the business account feature
+ */
 public abstract class Account {
     protected String iban;
     protected String currency;
@@ -245,34 +253,65 @@ public abstract class Account {
      */
     public abstract void setInterestRate(double interestRate);
 
+    /***
+     * putting each commerciant / merchant spending in a map
+     * @param merchantName
+     * @param amount
+     */
     public void addMerchantSpending(final String merchantName, final double amount) {
         double currentSpending = merchantSpending.getOrDefault(merchantName, 0.0);
         merchantSpending.put(merchantName, currentSpending + amount);
     }
 
-
+    /***
+     * putting each commerciant transaction in a map
+     * @param merchantName
+     * @return
+     */
     public void addCommerciantTransaction(final String merchantName, final double amount,
                                           final String userEmail) {
         // nu face nimic pentru conturile care nu sunt de tip business
     }
 
+    /***
+     * to be overridden in the business account
+     * @return
+     */
     public void addSpent(final String userEmail, final double amount) {
         // Implicit, conturile standard nu fac nimic
     }
 
+    /***
+     * to be overridden in the business account
+     * @param userEmail
+     * @param amount
+     */
     public void addDeposit(final String userEmail, final double amount) {
         // Implicit, conturile standard nu fac nimic
     }
 
+    /***
+     * logic for the cashback feature - spending treshold
+     * @param amount
+     * @return
+     */
     public double incrementTotalSpentOnTresholdCashback(final double amount) {
         totalSpentOnTresholdCashback += amount;
         return totalSpentOnTresholdCashback;
     }
 
+    /***
+     * getter for the total spent on treshold cashback
+     * @return
+     */
     public double getTotalSpentOnTresholdCashback() {
         return totalSpentOnTresholdCashback;
     }
 
+    /***
+     * to be overridden in the business account
+     * @return
+     */
     public abstract boolean isBusinessAccount(); // metoda ca sa nu folosesc instanceof
 
 }

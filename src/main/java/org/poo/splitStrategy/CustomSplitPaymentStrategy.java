@@ -14,6 +14,14 @@ import java.util.Map;
  */
 public class CustomSplitPaymentStrategy implements SplitPaymentStrategy {
 
+    /***
+     * Calculate the split for a custom payment.
+     * The amounts are taken from the command.getAmountForUsers() list.
+     * @param accounts
+     * @param command
+     * @param exchangeRateManager
+     * @return
+     */
     @Override
     public Map<Account, Double> calculateSplit(final List<Account> accounts,
                                                final CommandInput command,

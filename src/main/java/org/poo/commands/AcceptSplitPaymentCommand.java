@@ -30,6 +30,15 @@ public class AcceptSplitPaymentCommand implements Command {
         this.output = output;
     }
 
+    /***
+     * Accepts a split payment for a user.
+     * this is handling a lot of things
+     * like making sure that all the users accepted and if yes
+     * grabbing the pending transaction and finalizing it
+     * @param users - list of users
+     * @param commerciants
+     * @param command - the command to be executed
+     */
     @Override
     public void execute(final List<User> users, final List<Commerciant> commerciants,
                         final CommandInput command) {

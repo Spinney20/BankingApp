@@ -12,6 +12,13 @@ import java.util.Map;
  * among the participating accounts.
  */
 public interface SplitPaymentStrategy {
+    /***
+     * Calculate the split for a payment.
+     * @param accounts
+     * @param command
+     * @param exchangeRateManager
+     * @return
+     */
     Map<Account, Double> calculateSplit(
             List<Account> accounts,
             CommandInput command,

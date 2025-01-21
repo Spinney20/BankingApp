@@ -27,6 +27,13 @@ public class WithdrawSavingsCommand implements Command {
         this.exchangeRateManager = exchangeRateManager;
     }
 
+    /***
+     * Withdraws money from a savings account and deposits it into a classic account
+     * If the account is not found, an error is added to the output
+     * @param users - list of users
+     * @param commerciants
+     * @param command - the command to be executed
+     */
     @Override
     public void execute(final List<User> users, final List<Commerciant> commerciants,
                         final CommandInput command) {
