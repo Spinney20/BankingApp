@@ -12,7 +12,8 @@ import java.util.Set;
  *  - the split type ("custom"/"equal")
  *  - the participating accounts
  *  - the map (Account -> double amount)
- *  - a reference to the pending Operation (which might be SplitEqualPaymentOperation or SplitCustomPaymentOperation)
+ *  - a reference to the pending Operation (which might be
+ *  SplitEqualPaymentOperation or SplitCustomPaymentOperation)
  *  - the accepted/rejected status
  *  - the creation timestamp
  */
@@ -20,7 +21,8 @@ public class SplitPaymentState {
     private final String splitPaymentType;      // "custom" or "equal"
     private final Set<Account> allAccounts;     // the accounts involved
     private final Map<Account, Double> splitMap; // how much each account should pay
-    private final Operation pendingOperation;   // now a generic Operation, not specifically SplitEqualPaymentOperation
+    private final Operation pendingOperation;   // now a generic Operation,
+    // not specifically SplitEqualPaymentOperation
 
     private final Set<Account> acceptedAccounts; // who has accepted
     private boolean rejected;                   // did someone reject?
@@ -37,11 +39,11 @@ public class SplitPaymentState {
      * @param pendingOperation   the generic Operation object (could be custom or equal)
      * @param creationTimestamp  the time when this split was created
      */
-    public SplitPaymentState(String splitPaymentType,
-                             Set<Account> allAccounts,
-                             Map<Account, Double> splitMap,
-                             Operation pendingOperation,
-                             int creationTimestamp) {
+    public SplitPaymentState(final String splitPaymentType,
+                             final Set<Account> allAccounts,
+                             final Map<Account, Double> splitMap,
+                             final Operation pendingOperation,
+                             final int creationTimestamp) {
         this.splitPaymentType = splitPaymentType;
         this.allAccounts = allAccounts;
         this.splitMap = splitMap;
@@ -69,10 +71,6 @@ public class SplitPaymentState {
         return pendingOperation;
     }
 
-    public int getCreationTimestamp() {
-        return creationTimestamp;
-    }
-
     public boolean isRejected() {
         return rejected;
     }
@@ -81,14 +79,15 @@ public class SplitPaymentState {
         return finalized;
     }
 
-    public void setFinalized(boolean finalized) {
+    public void setFinalized(final boolean finalized) {
         this.finalized = finalized;
     }
 
     /**
-     * Marks the given account as accepting. If it's already rejected or finalized, throw an exception.
+     * Marks the given account as accepting.
+     * If it's already rejected or finalized, throw an exception.
      */
-    public void accept(Account account) {
+    public void accept(final Account account) {
         if (rejected) {
             throw new IllegalStateException("This split was already rejected by someone.");
         }
@@ -115,6 +114,7 @@ public class SplitPaymentState {
      * Checks if all participants have accepted (and no reject).
      */
     public boolean isFullyAccepted() {
-        return !rejected && !finalized && acceptedAccounts.containsAll(allAccounts);
+        return !rejected
+                && !finalized && acceptedAccounts.containsAll(allAccounts);
     }
 }

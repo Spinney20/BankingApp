@@ -35,7 +35,8 @@ public class PrintTransactions implements Command {
      * @param command - the command to be executed
      */
     @Override
-    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         User userWithTransactions = null;
 
         // Find the user
@@ -118,12 +119,13 @@ public class PrintTransactions implements Command {
                         break;
 
                     case "SplitPaymentEQUAL": {
-                        SplitEqualPaymentOperation splitEqualOp = (SplitEqualPaymentOperation) operation;
+                        SplitEqualPaymentOperation splitEqualOp
+                                = (SplitEqualPaymentOperation) operation;
 
                         // 3) "amount" => show the share rather than the total
                         operationNode.set("amount",
-                                objectMapper.getNodeFactory().numberNode(splitEqualOp.getAmount() /
-                                        splitEqualOp.getSplitMap().size()));
+                                objectMapper.getNodeFactory().numberNode(splitEqualOp.getAmount()
+                                        / splitEqualOp.getSplitMap().size()));
 
                         // 4) "currency"
                         operationNode.set("currency",
@@ -137,9 +139,11 @@ public class PrintTransactions implements Command {
                                 objectMapper.getNodeFactory().textNode(desc));
 
                         // 6) If there’s an error (insufficient funds), display it
-                        if (splitEqualOp.getError() != null && !splitEqualOp.getError().isEmpty()) {
+                        if (splitEqualOp.getError() != null
+                                && !splitEqualOp.getError().isEmpty()) {
                             operationNode.set("error",
-                                    objectMapper.getNodeFactory().textNode(splitEqualOp.getError()));
+                                    objectMapper.getNodeFactory().
+                                            textNode(splitEqualOp.getError()));
                         }
 
                         // 7) "involvedAccounts" => attach the existing ArrayNode
@@ -157,11 +161,13 @@ public class PrintTransactions implements Command {
 
                         // 8) "splitPaymentType"
                         operationNode.set("splitPaymentType",
-                                objectMapper.getNodeFactory().textNode(splitEqualOp.getSplitPaymentType()));
+                                objectMapper.getNodeFactory().textNode(splitEqualOp.
+                                        getSplitPaymentType()));
 
                         // 9) "timestamp"
                         operationNode.set("timestamp",
-                                objectMapper.getNodeFactory().numberNode(splitEqualOp.getTimestamp()));
+                                objectMapper.getNodeFactory().numberNode(splitEqualOp.
+                                        getTimestamp()));
 
                         break;
                     }
@@ -179,7 +185,8 @@ public class PrintTransactions implements Command {
                                         textNode(splitPaymentFailOperation.getCurrency()));
                         operationNode.set("description",
                                 objectMapper.getNodeFactory().
-                                        textNode(splitPaymentFailOperation.getDescription()));
+                                        textNode(splitPaymentFailOperation.
+                                                getDescription()));
                         operationNode.set("error",
                                 objectMapper.getNodeFactory().
                                         textNode(splitPaymentFailOperation.getError()));
@@ -188,7 +195,8 @@ public class PrintTransactions implements Command {
                         // Add splitPaymentType to the output
                         operationNode.set("splitPaymentType",
                                 objectMapper.getNodeFactory().
-                                        textNode(splitPaymentFailOperation.getSplitPaymentType()));
+                                        textNode(splitPaymentFailOperation.
+                                                getSplitPaymentType()));
                         break;
 
                     case "SplitPaymentCUSTOM": {
@@ -197,23 +205,27 @@ public class PrintTransactions implements Command {
 
                         // "amountForUsers"
                         ArrayNode amountsArray = objectMapper.createArrayNode();
-                        for (Double userAmount : splitCustomPaymentOperation.getAmountForUsers()) {
+                        for (Double userAmount : splitCustomPaymentOperation.
+                                getAmountForUsers()) {
                             amountsArray.add(userAmount);
                         }
                         operationNode.set("amountForUsers", amountsArray);
 
                         // "currency"
                         operationNode.set("currency",
-                                objectMapper.getNodeFactory().textNode(splitCustomPaymentOperation.getCurrency()));
+                                objectMapper.getNodeFactory().
+                                        textNode(splitCustomPaymentOperation.getCurrency()));
 
                         // "description"
                         operationNode.set("description",
-                                objectMapper.getNodeFactory().textNode(splitCustomPaymentOperation.getDescription()));
+                                objectMapper.getNodeFactory().
+                                        textNode(splitCustomPaymentOperation.getDescription()));
 
                         // If there's an error, show it
                         if (splitCustomPaymentOperation.getError() != null) {
                             operationNode.set("error",
-                                    objectMapper.getNodeFactory().textNode(splitCustomPaymentOperation.getError()));
+                                    objectMapper.getNodeFactory().
+                                            textNode(splitCustomPaymentOperation.getError()));
                         }
 
                         // "involvedAccounts"
@@ -225,11 +237,14 @@ public class PrintTransactions implements Command {
 
                         // "splitPaymentType"
                         operationNode.set("splitPaymentType",
-                                objectMapper.getNodeFactory().textNode(splitCustomPaymentOperation.getSplitPaymentType()));
+                                objectMapper.getNodeFactory().
+                                        textNode(splitCustomPaymentOperation.
+                                                getSplitPaymentType()));
 
                         // "timestamp"
                         operationNode.set("timestamp",
-                                objectMapper.getNodeFactory().numberNode(splitCustomPaymentOperation.getTimestamp()));
+                                objectMapper.getNodeFactory().
+                                        numberNode(splitCustomPaymentOperation.getTimestamp()));
 
                         break;
                     }
@@ -238,30 +253,37 @@ public class PrintTransactions implements Command {
                         operationNode.put("description", infoOperation.getDescription());
                         break;
                     case "upgradePlan":
-                        UpgradePlanOperation upgradePlanOperation = (UpgradePlanOperation) operation;
-                        operationNode.put("accountIBAN", upgradePlanOperation.getAccountIBAN());
-                        operationNode.put("newPlanType", upgradePlanOperation.getNewPlanType());
+                        UpgradePlanOperation upgradePlanOperation
+                                = (UpgradePlanOperation) operation;
+                        operationNode.put("accountIBAN",
+                                upgradePlanOperation.getAccountIBAN());
+                        operationNode.put("newPlanType",
+                                upgradePlanOperation.getNewPlanType());
                         operationNode.put("description", "Upgrade plan");
                         break;
                     case "cashWithdrawal":
                         CashWithdrawalOperation cashWithdrawalOperation =
                                 (CashWithdrawalOperation) operation;
                         operationNode.put("amount", cashWithdrawalOperation.getAmount());
-                        operationNode.put("description", cashWithdrawalOperation.getDescription());
+                        operationNode.put("description", cashWithdrawalOperation.
+                                getDescription());
                         break;
                     case "withdrawSavingsFail":
                         WithdrawSavingsFailOperation withdrawSavingsFailOperation =
                                 (WithdrawSavingsFailOperation) operation;
-                        operationNode.put("description", withdrawSavingsFailOperation.getDescription());
+                        operationNode.put("description", withdrawSavingsFailOperation.
+                                getDescription());
                         break;
                     case "addInterest":
-                        AddInterestOperation addInterestOperation = (AddInterestOperation) operation;
+                        AddInterestOperation addInterestOperation
+                                = (AddInterestOperation) operation;
                         operationNode.put("amount", addInterestOperation.getAmount());
                         operationNode.put("currency", addInterestOperation.getCurrency());
                         operationNode.put("description", addInterestOperation.getDescription());
                         break;
                     case "withdrawSav":
-                        WithdrawSavingsOperation transaction2 = (WithdrawSavingsOperation) operation;
+                        WithdrawSavingsOperation transaction2
+                                = (WithdrawSavingsOperation) operation;
                         operationNode.put("classicAccountIBAN", transaction2.getReceiverIBAN());
                         operationNode.put("description", transaction2.getDescription());
                         operationNode.put("savingsAccountIBAN", transaction2.getSenderIBAN());

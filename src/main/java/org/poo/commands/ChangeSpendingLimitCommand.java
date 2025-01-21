@@ -17,13 +17,14 @@ public class ChangeSpendingLimitCommand implements Command {
     private final ObjectMapper objectMapper;
     private final ArrayNode output;
 
-    public ChangeSpendingLimitCommand(ObjectMapper objectMapper, ArrayNode output) {
+    public ChangeSpendingLimitCommand(final ObjectMapper objectMapper, final ArrayNode output) {
         this.objectMapper = objectMapper;
         this.output = output;
     }
 
     @Override
-    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         String accountIban = command.getAccount();
         String requesterEmail = command.getEmail();
         double newSpendingLimit = command.getAmount();
@@ -44,7 +45,8 @@ public class ChangeSpendingLimitCommand implements Command {
 
         // Check if the requester is the owner
         if (!businessAccount.isOwner(requesterEmail)) {
-            addErrorToOutput("You must be owner in order to change spending limit.", command.getTimestamp());
+            addErrorToOutput("You must be owner in order to change spending limit.",
+                    command.getTimestamp());
             return;
         }
 
@@ -52,7 +54,7 @@ public class ChangeSpendingLimitCommand implements Command {
         businessAccount.changeGlobalSpendingLimit(newSpendingLimit);
     }
 
-    private Account findAccountByIban(String iban, List<User> users) {
+    private Account findAccountByIban(final String iban, final List<User> users) {
         for (User user : users) {
             for (Account account : user.getAccounts()) {
                 if (account.getIban().equals(iban)) {
@@ -63,7 +65,7 @@ public class ChangeSpendingLimitCommand implements Command {
         return null;
     }
 
-    private void addErrorToOutput(String description, int timestamp) {
+    private void addErrorToOutput(final String description, final int timestamp) {
         ObjectNode errorNode = objectMapper.createObjectNode();
         errorNode.put("command", "changeSpendingLimit");
         ObjectNode outputDetails = objectMapper.createObjectNode();

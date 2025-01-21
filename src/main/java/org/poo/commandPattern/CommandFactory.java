@@ -40,7 +40,8 @@ public class CommandFactory {
             case "printTransactions" -> new PrintTransactions(objectMapper, output);
             case "setMinimumBalance" -> new SetMinimumBalance(objectMapper, output);
             case "checkCardStatus" -> new CheckCardStatus(objectMapper, output);
-            case "splitPayment" -> new SplitPaymentCommand(objectMapper , output, exchangeRateManager);
+            case "splitPayment" -> new SplitPaymentCommand(objectMapper,
+                    output, exchangeRateManager);
             case "report" -> new Report(objectMapper, output);
             case "spendingsReport" -> new SpendingReport(objectMapper, output);
             case "changeInterestRate" -> new ChangeInterestCommand(objectMapper, output);
@@ -48,7 +49,8 @@ public class CommandFactory {
             case "withdrawSavings" -> new WithdrawSavingsCommand(objectMapper, output,
                     exchangeRateManager);
             case "upgradePlan" -> new UpgradePlanCommand(exchangeRateManager, objectMapper, output);
-            case "cashWithdrawal" -> new CashWithdrawalCommand(exchangeRateManager, objectMapper, output);
+            case "cashWithdrawal" -> new CashWithdrawalCommand(exchangeRateManager,
+                    objectMapper, output);
             case "acceptSplitPayment" -> new AcceptSplitPaymentCommand(objectMapper, output);
             case "rejectSplitPayment" -> new RejectSplitPaymentCommand(objectMapper, output);
             case "addNewBusinessAssociate" -> new AddNewBusinessAssociateCommand();

@@ -11,9 +11,11 @@ public class SplitPaymentFailOperation extends Operation {
     private String currency;
     private String splitPaymentType; // "equal" or "custom"
 
-    public SplitPaymentFailOperation(final int timestamp, final double amount, final String currency,
+    public SplitPaymentFailOperation(final int timestamp, final double amount,
+                                     final String currency,
                                      final String description, final String error,
-                                     final ArrayNode involvedAccounts, final String splitPaymentType) {
+                                     final ArrayNode involvedAccounts,
+                                     final String splitPaymentType) {
         super(timestamp);
         this.amount = amount;
         this.description = description;

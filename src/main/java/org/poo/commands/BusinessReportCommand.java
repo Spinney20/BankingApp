@@ -21,13 +21,14 @@ public class BusinessReportCommand implements Command {
     private final ObjectMapper objectMapper;
     private final ArrayNode output;
 
-    public BusinessReportCommand(ObjectMapper objectMapper, ArrayNode output) {
+    public BusinessReportCommand(final ObjectMapper objectMapper, final ArrayNode output) {
         this.objectMapper = objectMapper;
         this.output = output;
     }
 
     @Override
-    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput cmd) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput cmd) {
         String accountIban = cmd.getAccount();
         String reportType = cmd.getType(); // "transaction" or "commerciant"
         int startTimestamp = cmd.getStartTimestamp();
@@ -37,11 +38,6 @@ public class BusinessReportCommand implements Command {
 
         if (account == null) {
             addErrorNode("businessReport", cmd.getTimestamp(), "Account not found");
-            return;
-        }
-
-        if (!(account instanceof BusinessAccount)) {
-            addErrorNode("businessReport", cmd.getTimestamp(), "Account is not of type business");
             return;
         }
 
@@ -56,8 +52,10 @@ public class BusinessReportCommand implements Command {
         }
     }
 
-    private void generateTransactionReport(CommandInput cmd, BusinessAccount businessAccount, List<User> users,
-                                           int startTimestamp, int endTimestamp) {
+    private void generateTransactionReport(final CommandInput cmd,
+                                           final BusinessAccount businessAccount,
+                                           final List<User> users,
+                                           final int startTimestamp, final int endTimestamp) {
         ObjectNode node = objectMapper.createObjectNode();
         node.put("command", "businessReport");
         node.put("timestamp", cmd.getTimestamp());
@@ -76,13 +74,15 @@ public class BusinessReportCommand implements Command {
         double totalSpent = 0.0;
         double totalDeposited = 0.0;
 
-        for (Map.Entry<String, String> associateEntry : businessAccount.getAssociates().entrySet()) {
+        for (Map.Entry<String, String> associateEntry
+                : businessAccount.getAssociates().entrySet()) {
             String associateEmail = associateEntry.getKey();
             String role = associateEntry.getValue();
             User associate = findUserByEmail(users, associateEmail);
 
             if (associate != null) {
-                Stats stats = businessAccount.getStatsMap().getOrDefault(associateEmail, new Stats());
+                Stats stats = businessAccount.getStatsMap().
+                        getOrDefault(associateEmail, new Stats());
                 double spent = stats.getSpent();
                 double deposited = stats.getDeposited();
 
@@ -111,11 +111,11 @@ public class BusinessReportCommand implements Command {
         output.add(node);
     }
 
-    private void generateCommerciantReport(CommandInput cmd,
-                                           BusinessAccount businessAccount,
-                                           List<User> users,
-                                           int startTimestamp,
-                                           int endTimestamp) {
+    private void generateCommerciantReport(final CommandInput cmd,
+                                           final BusinessAccount businessAccount,
+                                           final List<User> users,
+                                           final int startTimestamp,
+                                           final int endTimestamp) {
         ObjectNode node = objectMapper.createObjectNode();
         node.put("command", "businessReport");
         node.put("timestamp", cmd.getTimestamp());
@@ -130,13 +130,12 @@ public class BusinessReportCommand implements Command {
         outputNode.put("deposit limit", businessAccount.getGlobalDepositLimit());
         outputNode.put("statistics type", "commerciant");
 
-        // A) Summaries:
         Map<String, Double> commerciantTransactions = businessAccount.getCommerciants();
 
-        // B) Detailed userSpent:
-        Map<String, Map<String, Double>> userSpentOnCommerciant = businessAccount.getUserSpentOnCommerciant();
-        // C) Our new userTxCount
-        Map<String, Map<String, Integer>> userTxCountOnCommerciant = businessAccount.getUserTxCountOnCommerciant();
+        Map<String, Map<String, Double>> userSpentOnCommerciant
+                = businessAccount.getUserSpentOnCommerciant();
+        Map<String, Map<String, Integer>> userTxCountOnCommerciant
+                = businessAccount.getUserTxCountOnCommerciant();
 
         for (Map.Entry<String, Double> entry : commerciantTransactions.entrySet()) {
             String commerciantName = entry.getKey();
@@ -150,10 +149,12 @@ public class BusinessReportCommand implements Command {
             ArrayNode employeesArray = objectMapper.createArrayNode();
 
             // B) For the sums
-            Map<String, Double> userMap = userSpentOnCommerciant.getOrDefault(commerciantName, new HashMap<>());
+            Map<String, Double> userMap
+                    = userSpentOnCommerciant.getOrDefault(commerciantName, new HashMap<>());
 
             // C) For the transaction counts
-            Map<String, Integer> txCountMap = userTxCountOnCommerciant.getOrDefault(commerciantName, new HashMap<>());
+            Map<String, Integer> txCountMap
+                    = userTxCountOnCommerciant.getOrDefault(commerciantName, new HashMap<>());
 
             // For each user who spent something
             for (Map.Entry<String, Double> userSpentEntry : userMap.entrySet()) {
@@ -166,13 +167,14 @@ public class BusinessReportCommand implements Command {
                 // find role
                 String role = businessAccount.getAssociates().get(email);
                 if (role == null) {
-                    // Not an associate => skip, or handle differently
                     continue;
                 }
 
                 // find user
                 User user = findUserByEmail(users, email);
-                if (user == null) continue;
+                if (user == null) {
+                    continue;
+                }
 
                 String fullName = user.getLastName() + " " + user.getFirstName();
 
@@ -205,13 +207,12 @@ public class BusinessReportCommand implements Command {
         output.add(node);
     }
 
-
-
-    private User findUserByEmail(List<User> users, String email) {
-        return users.stream().filter(user -> user.getEmail().equals(email)).findFirst().orElse(null);
+    private User findUserByEmail(final List<User> users, final String email) {
+        return users.stream().
+                filter(user -> user.getEmail().equals(email)).findFirst().orElse(null);
     }
 
-    private Account findAccountByIban(String iban, List<User> users) {
+    private Account findAccountByIban(final String iban, final List<User> users) {
         return users.stream()
                 .flatMap(user -> user.getAccounts().stream())
                 .filter(account -> account.getIban().equals(iban))
@@ -219,7 +220,8 @@ public class BusinessReportCommand implements Command {
                 .orElse(null);
     }
 
-    private void addErrorNode(String command, int timestamp, String errorMessage) {
+    private void addErrorNode(final String command, final int timestamp,
+                              final String errorMessage) {
         ObjectNode node = objectMapper.createObjectNode();
         node.put("command", command);
         node.put("timestamp", timestamp);
@@ -227,7 +229,7 @@ public class BusinessReportCommand implements Command {
         output.add(node);
     }
 
-    private void sortArrayNodeByField(ArrayNode arrayNode, String fieldName) {
+    private void sortArrayNodeByField(final ArrayNode arrayNode, final String fieldName) {
         List<ObjectNode> sortedList = StreamSupport.stream(arrayNode.spliterator(), false)
                 .map(node -> (ObjectNode) node)
                 .sorted(Comparator.comparing(o -> o.get(fieldName).asText()))

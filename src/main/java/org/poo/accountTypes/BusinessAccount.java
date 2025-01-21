@@ -24,7 +24,8 @@ public class BusinessAccount extends Account {
     private double globalSpendingLimit; // Global spending limit in account's currency
     private double globalDepositLimit;  // Global deposit limit in account's currency
 
-    public BusinessAccount(String iban, String currency, String ownerEmail,  ExchangeRateManager exchangeRateManager) {
+    public BusinessAccount(final String iban, final String currency, final String ownerEmail,
+                           final ExchangeRateManager exchangeRateManager) {
         super(iban, currency);
         this.ownerEmail = ownerEmail;
         this.associates = new LinkedHashMap<>();
@@ -33,13 +34,16 @@ public class BusinessAccount extends Account {
         this.userSpentOnCommerciant = new LinkedHashMap<>();
         this.userTxCountOnCommerciant = new LinkedHashMap<>();
 
-        this.globalSpendingLimit = convertDefaultLimit(exchangeRateManager, DEFAULT_LIMIT, currency);
-        this.globalDepositLimit = convertDefaultLimit(exchangeRateManager, DEFAULT_LIMIT, currency);
+        this.globalSpendingLimit =
+                convertDefaultLimit(exchangeRateManager, DEFAULT_LIMIT, currency);
+        this.globalDepositLimit =
+                convertDefaultLimit(exchangeRateManager, DEFAULT_LIMIT, currency);
     }
 
-    private double convertDefaultLimit(ExchangeRateManager exchangeRateManager, double defaultLimit, String currency) {
+    private double convertDefaultLimit(final ExchangeRateManager exchangeRateManager,
+                                       final double defaultLimit, final String currency) {
         if ("RON".equalsIgnoreCase(currency)) {
-            return defaultLimit; // Daca moneda este deja RON, nu facem conversie
+            return defaultLimit;
         }
 
         double exchangeRate = exchangeRateManager.getExchangeRate("RON", currency);
@@ -50,7 +54,7 @@ public class BusinessAccount extends Account {
         return defaultLimit * exchangeRate;
     }
 
-    public void addAssociate(String email, String role, User associate) {
+    public void addAssociate(final String email, final String role, final User associate) {
         if (associates.containsKey(email)) {
             throw new IllegalArgumentException("The user is already an associate of the account.");
         }
@@ -58,16 +62,15 @@ public class BusinessAccount extends Account {
         System.out.println("Associate pus in map cu rol " + role);
 
         if (associate != null) {
-            associate.addAccount(this); // `this` este contul BusinessAccount curent
+            associate.addAccount(this);
         }
     }
 
-
-    public void changeGlobalSpendingLimit(double newLimit) {
+    public void changeGlobalSpendingLimit(final double newLimit) {
         this.globalSpendingLimit = newLimit;
     }
 
-    public void changeGlobalDepositLimit(double newLimit) {
+    public void changeGlobalDepositLimit(final double newLimit) {
         this.globalDepositLimit = newLimit;
     }
 
@@ -83,16 +86,12 @@ public class BusinessAccount extends Account {
         return associates;
     }
 
-    public boolean isOwner(String email) {
+    public boolean isOwner(final String email) {
         return ownerEmail.equals(email);
     }
 
-    public boolean isAssociate(String email) {
+    public boolean isAssociate(final String email) {
         return associates.containsKey(email);
-    }
-
-    public String getRole(String email) {
-        return associates.get(email);
     }
 
     @Override
@@ -106,12 +105,14 @@ public class BusinessAccount extends Account {
     }
 
     @Override
-    public void setInterestRate(double interestRate) {
-        throw new UnsupportedOperationException("Business accounts do not support interest rates.");
+    public void setInterestRate(final double interestRate) {
+        throw new UnsupportedOperationException("Business accounts do"
+                + " not support interest rates.");
     }
 
     @Override
-    public void addCommerciantTransaction(String commerciantName, double amount, String userEmail) {
+    public void addCommerciantTransaction(final String commerciantName, final double amount,
+                                          final String userEmail) {
 
         // increment total for the entire business
         commerciants.put(commerciantName,
@@ -133,18 +134,20 @@ public class BusinessAccount extends Account {
     }
 
     @Override
-    public void addSpent(String userEmail, double amount) {
-        if (amount <= 0 || userEmail == null) return;
-
+    public void addSpent(final String userEmail, final double amount) {
+        if (amount <= 0 || userEmail == null) {
+            return;
+        }
         statsMap.putIfAbsent(userEmail, new Stats());
         Stats stats = statsMap.get(userEmail);
         stats.addSpent(amount);
     }
 
     @Override
-    public void addDeposit(String userEmail, double amount) {
-        if (amount <= 0 || userEmail == null) return;
-
+    public void addDeposit(final String userEmail, final double amount) {
+        if (amount <= 0 || userEmail == null) {
+            return;
+        }
         statsMap.putIfAbsent(userEmail, new Stats());
         Stats stats = statsMap.get(userEmail);
         stats.addDeposited(amount);
@@ -154,39 +157,24 @@ public class BusinessAccount extends Account {
         return statsMap;
     }
 
-    // Convert default limits into the account's currency
-    public double getConvertedDepositLimit(ExchangeRateManager exchangeRateManager) {
-        return convertDefaultLimit(exchangeRateManager, DEFAULT_LIMIT);
-    }
-
-    public double getConvertedSpendingLimit(ExchangeRateManager exchangeRateManager) {
-        return convertDefaultLimit(exchangeRateManager, DEFAULT_LIMIT);
-    }
-
-    private double convertDefaultLimit(ExchangeRateManager exchangeRateManager, double defaultLimit) {
-
-        double exchangeRate = exchangeRateManager.getExchangeRate("RON", getCurrency());
-        if (exchangeRate == -1) {
-            throw new IllegalStateException("Exchange rate not available for " + getCurrency());
-        }
-
-        return defaultLimit * exchangeRate; // Convert the default limit to the account's currency
-    }
-
     @Override
     public boolean isBusinessAccount() {
-        return true; //true doar pentru BusinessAccount
+        return true;
     }
 
-    public boolean isEmployee(User user) {
-        if (user == null) return false;
+    public boolean isEmployee(final User user) {
+        if (user == null) {
+            return false;
+        }
         String role = associates.get(user.getEmail());
-        if (role == null) return false;
+        if (role == null) {
+            return false;
+        }
         role = role.trim(); // remove extra spaces just in case
         return role.equalsIgnoreCase("employee");
     }
 
-    public Map <String, Map<String, Double>> getUserSpentOnCommerciant() {
+    public Map<String, Map<String, Double>> getUserSpentOnCommerciant() {
         return userSpentOnCommerciant;
     }
 

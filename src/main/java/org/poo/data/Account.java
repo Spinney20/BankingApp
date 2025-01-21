@@ -17,7 +17,8 @@ public abstract class Account {
     private String alias;
 
     // Cashback-related fields
-    private Map<String, Integer> merchantTransactionCount; // Tracks number of transactions per merchant
+    // Tracks number of transactions per merchant
+    private Map<String, Integer> merchantTransactionCount;
     private Map<String, Double> spendingTotals; // Tracks total spending per category
     private Map<String, Boolean> cashbackApplied; // Tracks if cashback was applied per category
     private Map<String, Double> merchantSpending;
@@ -184,67 +185,11 @@ public abstract class Account {
     }
 
     /***
-     * Getter for the alias
-     * @return
-     */
-    public String getAlias() {
-        return alias;
-    }
-
-    /***
-     * Increment the transaction count for a given merchant and category.
-     * This is used for cashback calculation of type nrOfTransactions.
-     * @param merchant - the name of the merchant
-     * @param category - the category of the merchant (Food, Clothes, Tech, etc.)
-     */
-    public void incrementTransaction(String merchant, String category) {
-        merchantTransactionCount.put(merchant, merchantTransactionCount.getOrDefault(merchant, 0) + 1);
-        cashbackApplied.put(category, false); // Reset cashback availability for this category
-    }
-
-    /***
-     * Add spending to a category (used for spendingThreshold cashback).
-     * This keeps track of the total amount spent in RON equivalent.
-     * @param category - the category of spending
-     * @param amount - the amount spent
-     */
-    public void addSpending(String category, double amount) {
-        spendingTotals.put(category, spendingTotals.getOrDefault(category, 0.0) + amount);
-    }
-
-    /***
-     * Get the transaction count for a specific merchant.
-     * @param merchant - the merchant name
-     * @return - the transaction count for the merchant
-     */
-    public int getTransactionCount(String merchant) {
-        return merchantTransactionCount.getOrDefault(merchant, 0);
-    }
-
-    /***
-     * Get the total spending for a specific category.
-     * @param category - the category name (Food, Clothes, Tech, etc.)
-     * @return - the total spending in the given category
-     */
-    public double getTotalSpending(String category) {
-        return spendingTotals.getOrDefault(category, 0.0);
-    }
-
-    /***
-     * Check if cashback is available for a specific category.
-     * @param category - the category name
-     * @return - true if cashback is available, false otherwise
-     */
-    public boolean isCashbackAvailable(String category) {
-        return !cashbackApplied.getOrDefault(category, true);
-    }
-
-    /***
      * Mark cashback as applied for a specific category.
      * This is used to prevent multiple cashback applications for the same category.
      * @param category - the category name
      */
-    public void applyCashback(String category) {
+    public void applyCashback(final String category) {
         cashbackApplied.put(category, true);
     }
 
@@ -252,7 +197,7 @@ public abstract class Account {
      * Add a pending operation to the account.
      * @param operation - the operation to be added to pending.
      */
-    public void addPendingOperation(Operation operation) {
+    public void addPendingOperation(final Operation operation) {
         pendingOperations.add(operation);
     }
 
@@ -260,16 +205,8 @@ public abstract class Account {
      * Remove a pending operation from the account.
      * @param operation - the operation to be removed.
      */
-    public void removePendingOperation(Operation operation) {
+    public void removePendingOperation(final Operation operation) {
         pendingOperations.remove(operation);
-    }
-
-    /***
-     * Get the list of pending operations.
-     * @return - list of pending operations.
-     */
-    public List<Operation> getPendingOperations() {
-        return new ArrayList<>(pendingOperations);
     }
 
     /***
@@ -277,7 +214,7 @@ public abstract class Account {
      * @param category - the category name.
      * @return - true if the cashback was used, false otherwise.
      */
-    public boolean hasUsedNrOfTransactionsCashback(String category) {
+    public boolean hasUsedNrOfTransactionsCashback(final String category) {
         return nrOfTransactionsCashbackUsed.getOrDefault(category, false);
     }
 
@@ -285,7 +222,7 @@ public abstract class Account {
      * Mark nrOfTransactionsCashback as used for a specific category.
      * @param category - the category name.
      */
-    public void markNrOfTransactionsCashbackAsUsed(String category) {
+    public void markNrOfTransactionsCashbackAsUsed(final String category) {
         nrOfTransactionsCashbackUsed.put(category, true);
     }
 
@@ -308,29 +245,26 @@ public abstract class Account {
      */
     public abstract void setInterestRate(double interestRate);
 
-    public double getMerchantSpending(String merchantName) {
-        return merchantSpending.getOrDefault(merchantName, 0.0);
-    }
-
-    public void addMerchantSpending(String merchantName, double amount) {
+    public void addMerchantSpending(final String merchantName, final double amount) {
         double currentSpending = merchantSpending.getOrDefault(merchantName, 0.0);
         merchantSpending.put(merchantName, currentSpending + amount);
     }
 
 
-    public void addCommerciantTransaction(String merchantName, double amount, String userEmail) {
+    public void addCommerciantTransaction(final String merchantName, final double amount,
+                                          final String userEmail) {
         // nu face nimic pentru conturile care nu sunt de tip business
     }
 
-    public void addSpent(String userEmail, double amount) {
+    public void addSpent(final String userEmail, final double amount) {
         // Implicit, conturile standard nu fac nimic
     }
 
-    public void addDeposit(String userEmail, double amount) {
+    public void addDeposit(final String userEmail, final double amount) {
         // Implicit, conturile standard nu fac nimic
     }
 
-    public double incrementTotalSpentOnTresholdCashback(double amount) {
+    public double incrementTotalSpentOnTresholdCashback(final double amount) {
         totalSpentOnTresholdCashback += amount;
         return totalSpentOnTresholdCashback;
     }

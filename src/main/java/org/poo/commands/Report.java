@@ -33,7 +33,8 @@ public class Report implements Command {
      * @param command - the command to be executed
      */
     @Override
-    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         Account targetAccount = null;
 
         // Finding the acc
@@ -127,7 +128,8 @@ public class Report implements Command {
                         break;
 
                     case "SplitPayment":
-                        SplitEqualPaymentOperation splitEqualPaymentOperation = (SplitEqualPaymentOperation) operation;
+                        SplitEqualPaymentOperation splitEqualPaymentOperation
+                                = (SplitEqualPaymentOperation) operation;
                         operationNode.set("amount",
                                 objectMapper.getNodeFactory().
                                         numberNode(splitEqualPaymentOperation.getAmount()));
@@ -168,13 +170,15 @@ public class Report implements Command {
                                         textNode(splitPaymentFailOperation.getSplitPaymentType()));
                         break;
                     case "upgradePlan":
-                        UpgradePlanOperation upgradePlanOperation = (UpgradePlanOperation) operation;
+                        UpgradePlanOperation upgradePlanOperation
+                                = (UpgradePlanOperation) operation;
                         operationNode.put("accountIBAN", upgradePlanOperation.getAccountIBAN());
                         operationNode.put("newPlanType", upgradePlanOperation.getNewPlanType());
                         operationNode.put("description", "Upgrade plan");
                         break;
                     case "addInterest":
-                        AddInterestOperation addInterestOperation = (AddInterestOperation) operation;
+                        AddInterestOperation addInterestOperation
+                                = (AddInterestOperation) operation;
                         operationNode.put("amount", addInterestOperation.getAmount());
                         operationNode.put("currency", addInterestOperation.getCurrency());
                         operationNode.put("description", addInterestOperation.getDescription());

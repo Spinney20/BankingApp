@@ -88,7 +88,7 @@ public final class Main {
                     userInput.getFirstName(),
                     userInput.getLastName(),
                     userInput.getEmail(),
-                    LocalDate.parse(userInput.getBirthDate()), // Assuming birthDate is in ISO format (e.g., "2000-12-24")
+                    LocalDate.parse(userInput.getBirthDate()),
                     userInput.getOccupation()
             );
             users.add(user);

@@ -13,7 +13,7 @@ public class Stats {
         return spent;
     }
 
-    public void addSpent(double amount) {
+    public void addSpent(final double amount) {
         this.spent += amount;
     }
 
@@ -21,7 +21,7 @@ public class Stats {
         return deposited;
     }
 
-    public void addDeposited(double amount) {
+    public void addDeposited(final double amount) {
         this.deposited += amount;
     }
 }

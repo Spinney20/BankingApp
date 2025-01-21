@@ -20,7 +20,8 @@ public class AddFundsCommand implements Command {
      * 4) If limit not exceeded, we add funds and add a deposit operation.
      */
     @Override
-    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         // 1) Find the user by email
         User depositUser = null;
         for (User user : users) {

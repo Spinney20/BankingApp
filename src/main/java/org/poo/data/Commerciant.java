@@ -12,8 +12,8 @@ public class Commerciant {
     private String account; // IBAN-ul comerciantului
     private Map<Account, Integer> transactionCounts; // Transactions per account
 
-    // Constructor
-    public Commerciant(String name, String category, String cashbackType, String account) {
+    public Commerciant(final String name, final String category, final String cashbackType,
+                       final String account) {
         this.name = name;
         this.category = category;
         this.cashbackType = cashbackType;
@@ -22,32 +22,27 @@ public class Commerciant {
         merchants.put(name, this);
     }
 
-    // Getter pentru un comerciant după nume
-    public static Commerciant getMerchantByName(String name) {
+    public static Commerciant getMerchantByName(final String name) {
         return merchants.get(name);
     }
 
-    // Getter pentru categoria comerciantului (ex: Food, Tech etc.)
     public String getCategory() {
         return category;
     }
 
-    // Getter pentru strategia de cashback a comerciantului
     public String getCashbackType() {
         return cashbackType;
     }
 
-    // Getter pentru contul comerciantului
     public String getAccount() {
         return account;
     }
 
-    // Getter pentru numele comerciantului
     public String getName() {
         return name;
     }
 
-    public int incrementAndGetTransactionCount(Account account) {
+    public int incrementAndGetTransactionCount(final Account account) {
         int currentCount = transactionCounts.getOrDefault(account, 0);
         transactionCounts.put(account, currentCount + 1);
         return currentCount + 1;

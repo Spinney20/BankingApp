@@ -15,9 +15,9 @@ import java.util.Map;
 public class CustomSplitPaymentStrategy implements SplitPaymentStrategy {
 
     @Override
-    public Map<Account, Double> calculateSplit(List<Account> accounts,
-                                               CommandInput command,
-                                               ExchangeRateManager exchangeRateManager) {
+    public Map<Account, Double> calculateSplit(final List<Account> accounts,
+                                               final CommandInput command,
+                                               final ExchangeRateManager exchangeRateManager) {
         List<Double> amounts = command.getAmountForUsers();
         if (amounts == null || amounts.size() != accounts.size()) {
             throw new IllegalArgumentException("Mismatch between accounts and custom amounts");

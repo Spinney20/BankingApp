@@ -25,21 +25,21 @@ public class AcceptSplitPaymentCommand implements Command {
     private final ObjectMapper objectMapper;
     private final ArrayNode output;
 
-    public AcceptSplitPaymentCommand(ObjectMapper objectMapper, ArrayNode output) {
+    public AcceptSplitPaymentCommand(final ObjectMapper objectMapper, final ArrayNode output) {
         this.objectMapper = objectMapper;
         this.output = output;
     }
 
     @Override
-    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         // 1) Find the user
         User user = findUserByEmail(users, command.getEmail());
         if (user == null) {
             generateOutput("User not found", command.getTimestamp());
             return;
         }
-
-        // 2) Find the first pending split of "splitPaymentType" for one of this user's accounts
+        //2) Find the first pending split of "splitPaymentType" for one of this user's accounts
         String splitType = command.getSplitPaymentType();
         if (splitType == null) {
             splitType = "equal"; // default if not specified
@@ -61,18 +61,21 @@ public class AcceptSplitPaymentCommand implements Command {
         }
 
         if (state == null || userAccount == null) {
-            generateOutput("No pending split of type " + splitType + " found for user", command.getTimestamp());
+            generateOutput("No pending split of type " + splitType
+                    + " found for user", command.getTimestamp());
             return;
         }
 
         // 3) Accept the split
         try {
             manager.acceptSplit(state, userAccount);
-            // If all accounts accept, it will finalize => might throw "INSUFFICIENT_FUNDS" if short on balance
+            // If all accounts accept,
+            // it will finalize => might throw "INSUFFICIENT_FUNDS" if short on balance
         } catch (RuntimeException e) {
             if (e.getMessage().startsWith("INSUFFICIENT_FUNDS")) {
                 String iban = e.getMessage().split(":")[1];
-                generateOutput("Account " + iban + " has insufficient funds for a split payment.",
+                generateOutput("Account " + iban
+                                + " has insufficient funds for a split payment.",
                         command.getTimestamp());
             } else {
                 generateOutput(e.getMessage(), command.getTimestamp());
@@ -80,7 +83,7 @@ public class AcceptSplitPaymentCommand implements Command {
         }
     }
 
-    private User findUserByEmail(List<User> users, String email) {
+    private User findUserByEmail(final List<User> users, final String email) {
         for (User u : users) {
             if (u.getEmail().equals(email)) {
                 return u;
@@ -89,7 +92,7 @@ public class AcceptSplitPaymentCommand implements Command {
         return null;
     }
 
-    private void generateOutput(String message, int timestamp) {
+    private void generateOutput(final String message, final int timestamp) {
         ObjectNode node = objectMapper.createObjectNode();
         node.put("timestamp", timestamp);
         node.put("description", message);

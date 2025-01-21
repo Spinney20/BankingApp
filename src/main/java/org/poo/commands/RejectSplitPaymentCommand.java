@@ -23,13 +23,14 @@ public class RejectSplitPaymentCommand implements Command {
     private final ObjectMapper objectMapper;
     private final ArrayNode output;
 
-    public RejectSplitPaymentCommand(ObjectMapper objectMapper, ArrayNode output) {
+    public RejectSplitPaymentCommand(final ObjectMapper objectMapper, final ArrayNode output) {
         this.objectMapper = objectMapper;
         this.output = output;
     }
 
     @Override
-    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         ObjectNode outputNode = objectMapper.createObjectNode();
         // 1) Find the user
         User user = findUserByEmail(users, command.getEmail());
@@ -65,7 +66,8 @@ public class RejectSplitPaymentCommand implements Command {
         }
 
         if (state == null || userAccount == null) {
-            generateOutput("No pending split of type " + splitType + " found for user", command.getTimestamp());
+            generateOutput("No pending split of type "
+                    + splitType + " found for user", command.getTimestamp());
             return;
         }
 
@@ -78,7 +80,7 @@ public class RejectSplitPaymentCommand implements Command {
         }
     }
 
-    private User findUserByEmail(List<User> users, String email) {
+    private User findUserByEmail(final List<User> users, final String email) {
         for (User u : users) {
             if (u.getEmail().equals(email)) {
                 return u;
@@ -87,7 +89,7 @@ public class RejectSplitPaymentCommand implements Command {
         return null;
     }
 
-    private void generateOutput(String message, int timestamp) {
+    private void generateOutput(final String message, final int timestamp) {
         ObjectNode node = objectMapper.createObjectNode();
         node.put("timestamp", timestamp);
         node.put("description", message);

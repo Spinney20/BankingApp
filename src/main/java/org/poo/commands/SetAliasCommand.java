@@ -19,7 +19,8 @@ public class SetAliasCommand implements Command {
      * @param command - the command to be executed
      */
     @Override
-    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         User aliasingUser = null;
 
         for (User user : users) {

@@ -1,8 +1,6 @@
 package org.poo.operationTypes;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.data.Account;
@@ -60,33 +58,7 @@ public class SplitEqualPaymentOperation extends Operation {
     }
 
     @Override
-    public void setError(String error) {
+    public void setError(final String error) {
         this.error = error;
-    }
-
-    /**
-     * Build a JSON object for printing or logging.
-     */
-    public ObjectNode toJson(ObjectMapper mapper) {
-        ObjectNode node = mapper.createObjectNode();
-
-        // amount (the total for the entire equal split)
-        node.put("amount", amount);
-
-        node.put("currency", currency);
-        node.put("description", description);
-
-        // error if present
-        if (error != null && !error.isEmpty()) {
-            node.put("error", error);
-        }
-
-        // involvedAccounts (already an ArrayNode of strings)
-        node.set("involvedAccounts", involvedAccounts);
-
-        node.put("splitPaymentType", splitPaymentType);
-        node.put("timestamp", getTimestamp());
-
-        return node;
     }
 }

@@ -19,5 +19,5 @@ public interface Command {
      * @param users - list of users
      * @param command - the command to be executed
      */
-    void execute(List<User> users, List<Commerciant> commerciants , CommandInput command);
+    void execute(List<User> users, List<Commerciant> commerciants, CommandInput command);
 }

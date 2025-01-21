@@ -15,9 +15,9 @@ import java.util.Map;
 public class EqualSplitPaymentStrategy implements SplitPaymentStrategy {
 
     @Override
-    public Map<Account, Double> calculateSplit(List<Account> accounts,
-                                               CommandInput command,
-                                               ExchangeRateManager exchangeRateManager) {
+    public Map<Account, Double> calculateSplit(final List<Account> accounts,
+                                               final CommandInput command,
+                                               final ExchangeRateManager exchangeRateManager) {
         double total = command.getAmount();
         String baseCurrency = command.getCurrency();
         double share = total / accounts.size();

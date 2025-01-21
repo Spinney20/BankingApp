@@ -17,13 +17,15 @@ public class ChangeDepositLimitCommand implements Command {
     private final ObjectMapper objectMapper;
     private final ArrayNode output;
 
-    public ChangeDepositLimitCommand(ObjectMapper objectMapper, ArrayNode output) {
+    public ChangeDepositLimitCommand(final ObjectMapper objectMapper,
+                                     final ArrayNode output) {
         this.objectMapper = objectMapper;
         this.output = output;
     }
 
     @Override
-    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         String accountIban = command.getAccount();
         String requesterEmail = command.getEmail();
         double newDepositLimit = command.getAmount();
@@ -36,7 +38,8 @@ public class ChangeDepositLimitCommand implements Command {
         }
 
         if (!account.isBusinessAccount()) {
-            addErrorToOutput("Account is not of type business.", command.getTimestamp());
+            addErrorToOutput("Account is not of type business.",
+                    command.getTimestamp());
             return;
         }
 
@@ -44,7 +47,8 @@ public class ChangeDepositLimitCommand implements Command {
 
         // Check if the requester is the owner
         if (!businessAccount.isOwner(requesterEmail)) {
-            addErrorToOutput("You must be owner in order to change deposit limit.", command.getTimestamp());
+            addErrorToOutput("You must be owner in order to change deposit limit.",
+                    command.getTimestamp());
             return;
         }
 
@@ -52,7 +56,7 @@ public class ChangeDepositLimitCommand implements Command {
         businessAccount.changeGlobalDepositLimit(newDepositLimit);
     }
 
-    private Account findAccountByIban(String iban, List<User> users) {
+    private Account findAccountByIban(final String iban, final List<User> users) {
         for (User user : users) {
             for (Account account : user.getAccounts()) {
                 if (account.getIban().equals(iban)) {
@@ -63,7 +67,7 @@ public class ChangeDepositLimitCommand implements Command {
         return null;
     }
 
-    private void addErrorToOutput(String description, int timestamp) {
+    private void addErrorToOutput(final String description, final int timestamp) {
         ObjectNode errorNode = objectMapper.createObjectNode();
         errorNode.put("command", "changeDepositLimit");
         ObjectNode outputDetails = objectMapper.createObjectNode();

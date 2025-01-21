@@ -10,8 +10,6 @@ import org.poo.data.Commerciant;
 import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 import org.poo.operationTypes.FailOperation;
-import org.poo.operationTypes.TransactionOperation;
-import org.poo.operationTypes.WithdrawSavingsFailOperation;
 import org.poo.operationTypes.WithdrawSavingsOperation;
 
 import java.util.List;
@@ -21,14 +19,17 @@ public class WithdrawSavingsCommand implements Command {
     private final ArrayNode output;
     private final ExchangeRateManager exchangeRateManager;
 
-    public WithdrawSavingsCommand(ObjectMapper objectMapper, ArrayNode output, ExchangeRateManager exchangeRateManager) {
+    public WithdrawSavingsCommand(final ObjectMapper objectMapper,
+                                  final ArrayNode output,
+                                  final ExchangeRateManager exchangeRateManager) {
         this.objectMapper = objectMapper;
         this.output = output;
         this.exchangeRateManager = exchangeRateManager;
     }
 
     @Override
-    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         ObjectNode commandOutput = objectMapper.createObjectNode();
         commandOutput.put("command", "withdrawSavings");
         commandOutput.put("timestamp", command.getTimestamp());
@@ -46,7 +47,9 @@ public class WithdrawSavingsCommand implements Command {
                     break;
                 }
             }
-            if (savingsAccount != null) break;
+            if (savingsAccount != null) {
+                break;
+            }
         }
 
         if (currentUser == null) {
@@ -79,7 +82,8 @@ public class WithdrawSavingsCommand implements Command {
 
         // Find the first classic account with the specified currency
         for (Account account : currentUser.getAccounts()) {
-            if (account.getAccountType().equals("classic") && account.getCurrency().equals(command.getCurrency())) {
+            if (account.getAccountType().equals("classic")
+                    && account.getCurrency().equals(command.getCurrency())) {
                 classicAccount = account;
                 break;
             }
@@ -95,7 +99,9 @@ public class WithdrawSavingsCommand implements Command {
         }
 
         // Calculate exchange rate
-        double exchangeRate = exchangeRateManager.getExchangeRate(savingsAccount.getCurrency(), command.getCurrency());
+        double exchangeRate
+                = exchangeRateManager.
+                getExchangeRate(savingsAccount.getCurrency(), command.getCurrency());
         if (exchangeRate == -1) {
             ObjectNode errorOutput = objectMapper.createObjectNode();
             errorOutput.put("description", "Exchange rate not found.");

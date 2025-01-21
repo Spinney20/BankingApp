@@ -35,20 +35,22 @@ public class SplitPaymentCommand implements Command {
     private final ArrayNode output;
     private final ExchangeRateManager exchangeRateManager;
 
-    public SplitPaymentCommand(ObjectMapper objectMapper,
-                               ArrayNode output,
-                               ExchangeRateManager exchangeRateManager) {
+    public SplitPaymentCommand(final ObjectMapper objectMapper,
+                               final ArrayNode output,
+                               final ExchangeRateManager exchangeRateManager) {
         this.objectMapper = objectMapper;
         this.output = output;
         this.exchangeRateManager = exchangeRateManager;
     }
 
     @Override
-    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         // 1) Find the accounts
         List<String> ibans = command.getAccounts();
         if (ibans == null || ibans.isEmpty()) {
-            generateOutput("No accounts provided for split payment.", command.getTimestamp());
+            generateOutput("No accounts provided for split payment.",
+                    command.getTimestamp());
             return;
         }
 
@@ -79,7 +81,8 @@ public class SplitPaymentCommand implements Command {
                     command.getTimestamp(),
                     command.getAmount(),
                     command.getCurrency(),
-                    "Split payment of " + String.format("%.2f", command.getAmount()) + " " + command.getCurrency(),
+                    "Split payment of " + String.format("%.2f",
+                            command.getAmount()) + " " + command.getCurrency(),
                     command.getAccounts(),         // List<String> of IBANs
                     command.getAmountForUsers(),   // List<Double> user amounts
                     "custom"
@@ -96,7 +99,8 @@ public class SplitPaymentCommand implements Command {
                     command.getTimestamp(),
                     command.getAmount(),
                     command.getCurrency(),
-                    "Split payment of " + String.format("%.2f", command.getAmount()) + " " + command.getCurrency(),
+                    "Split payment of " + String.format("%.2f", command.getAmount())
+                            + " " + command.getCurrency(),
                     arrayNodeIbans,
                     // If 'splitPaymentType' is null or not "equal", we can default to "equal"
                     (splitType == null ? "equal" : splitType),
@@ -122,14 +126,14 @@ public class SplitPaymentCommand implements Command {
         }
     }
 
-    private SplitPaymentStrategy selectStrategy(String splitPaymentType) {
+    private SplitPaymentStrategy selectStrategy(final String splitPaymentType) {
         if ("custom".equalsIgnoreCase(splitPaymentType)) {
             return new CustomSplitPaymentStrategy();
         }
         return new EqualSplitPaymentStrategy();
     }
 
-    private List<Account> findAccounts(List<String> ibans, List<User> users) {
+    private List<Account> findAccounts(final List<String> ibans, final List<User> users) {
         return ibans.stream()
                 .flatMap(iban -> users.stream()
                         .flatMap(u -> u.getAccounts().stream())
@@ -137,7 +141,7 @@ public class SplitPaymentCommand implements Command {
                 .collect(Collectors.toList());
     }
 
-    private void generateOutput(String message, int timestamp) {
+    private void generateOutput(final String message, final int timestamp) {
         ObjectNode node = objectMapper.createObjectNode();
         node.put("timestamp", timestamp);
         node.put("description", message);

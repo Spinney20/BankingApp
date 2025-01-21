@@ -31,7 +31,8 @@ public class SendMoneyCommand implements Command {
     }
 
     @Override
-    public void execute(final List<User> users, List<Commerciant> commerciants, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         Account fromAccount = null;
         Account toAccount = null;
         String toAccountCommerciantIBAN = null;
@@ -84,7 +85,7 @@ public class SendMoneyCommand implements Command {
             return;
         }
 
-        if (receiverIsUser == true) {
+        if (receiverIsUser) {
             // Convert the amount to the receiver's currency
             double exchangeRate = exchangeRateManager.
                     getExchangeRate(fromAccount.getCurrency(), toAccount.getCurrency());
@@ -93,9 +94,10 @@ public class SendMoneyCommand implements Command {
             // Convert the transaction amount to RON for commission calculation
             double transactionAmountInRON = convertedAmount; // Default to converted amount
             if (!toAccount.getCurrency().equals("RON")) {
-                double reverseExchangeRate = exchangeRateManager.getExchangeRate(toAccount.getCurrency(), "RON");
+                double reverseExchangeRate = exchangeRateManager.
+                        getExchangeRate(toAccount.getCurrency(), "RON");
                 if (reverseExchangeRate != -1) {
-                    transactionAmountInRON = convertedAmount * reverseExchangeRate; // Convert to RON
+                    transactionAmountInRON = convertedAmount * reverseExchangeRate;
                 }
             }
 
@@ -105,11 +107,13 @@ public class SendMoneyCommand implements Command {
             // Convert commission back to the sender's account currency
             double commissionInSenderCurrency = commission;
             if (!fromAccount.getCurrency().equalsIgnoreCase("RON")) {
-                double reverseExchangeRate = exchangeRateManager.getExchangeRate("RON", fromAccount.getCurrency());
+                double reverseExchangeRate = exchangeRateManager.
+                        getExchangeRate("RON", fromAccount.getCurrency());
                 if (reverseExchangeRate != -1) {
                     commissionInSenderCurrency = commission * reverseExchangeRate;
                 } else {
-                    commissionInSenderCurrency = 0.0; // If exchange rate is not available, treat commission as 0
+                    commissionInSenderCurrency = 0.0; // If exchange rate is not available,
+                    // treat commission as 0
                 }
             }
 
@@ -159,7 +163,8 @@ public class SendMoneyCommand implements Command {
             // Deduct funds from sender
             fromAccount.removeFunds(command.getAmount());
 
-            // 1) Convert 'command.getAmount()' from fromAccount currency -> RON for commission/cashback
+            // 1) Convert 'command.getAmount()'
+            // from fromAccount currency -> RON for commission/cashback
             double transactionAmountInRON = command.getAmount();
             if (!fromAccount.getCurrency().equalsIgnoreCase("RON")) {
                 double exRate = exchangeRateManager.getExchangeRate(
@@ -177,7 +182,8 @@ public class SendMoneyCommand implements Command {
             // 3) Convert commission back to fromAccount currency
             double commissionInSenderCurrency = commission;
             if (!fromAccount.getCurrency().equalsIgnoreCase("RON")) {
-                double reverseExRate = exchangeRateManager.getExchangeRate("RON", fromAccount.getCurrency());
+                double reverseExRate = exchangeRateManager.
+                        getExchangeRate("RON", fromAccount.getCurrency());
                 if (reverseExRate != -1) {
                     commissionInSenderCurrency = commission * reverseExRate;
                 } else {
@@ -189,7 +195,8 @@ public class SendMoneyCommand implements Command {
 
             double cashback = 0.0;
             CashbackStrategy cashbackStrategy;
-            if(potentialCommerciant.getCashbackType().equalsIgnoreCase("nrOfTransactions")) {
+            if (potentialCommerciant.getCashbackType().
+                    equalsIgnoreCase("nrOfTransactions")) {
                 cashbackStrategy = new NrOfTransactionsStrategy(fromAccount);
                 cashback = cashbackStrategy.calculateCashback(
                         command.getAmount(),
@@ -222,7 +229,8 @@ public class SendMoneyCommand implements Command {
             );
 
             fromAccount.addOperation(senderTransaction);
-            fromAccount.addCommerciantTransaction(potentialCommerciant.getName(), command.getAmount(), senderUser.getEmail());
+            fromAccount.addCommerciantTransaction(potentialCommerciant.getName(),
+                    command.getAmount(), senderUser.getEmail());
         }
     }
 
@@ -231,7 +239,7 @@ public class SendMoneyCommand implements Command {
     /**
      * Adds output JSON for failure cases.
      */
-    private void addOutputToJson(String description, int timestamp) {
+    private void addOutputToJson(final String description, final int timestamp) {
         ObjectNode outputNode = objectMapper.createObjectNode();
         ObjectNode detailsNode = objectMapper.createObjectNode();
 
@@ -244,7 +252,7 @@ public class SendMoneyCommand implements Command {
         output.add(outputNode);
     }
 
-    private User findUserByEmail(List<User> users, String email) {
+    private User findUserByEmail(final List<User> users, final String email) {
         for (User user : users) {
             if (user.getEmail().equals(email)) {
                 return user;

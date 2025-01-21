@@ -7,7 +7,7 @@ public class SavingsAccount extends Account {
 
     public SavingsAccount(final String iban, final String currency, final double interestRate) {
         super(iban, currency);
-        this.interestRate = interestRate; // Setăm rata dobânzii la inițializare
+        this.interestRate = interestRate;
     }
 
     /***

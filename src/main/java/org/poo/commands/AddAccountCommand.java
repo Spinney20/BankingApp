@@ -23,7 +23,7 @@ public class AddAccountCommand implements Command {
      *
      * @param exchangeRateManager The exchange rate manager used for currency conversion.
      */
-    public AddAccountCommand(ExchangeRateManager exchangeRateManager) {
+    public AddAccountCommand(final ExchangeRateManager exchangeRateManager) {
         this.exchangeRateManager = exchangeRateManager;
     }
 
@@ -40,7 +40,8 @@ public class AddAccountCommand implements Command {
      * @param command - The command input containing account details.
      */
     @Override
-    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
 
         for (User user : users) { // Search for the user
             if (user.getEmail().equals(command.getEmail())) {

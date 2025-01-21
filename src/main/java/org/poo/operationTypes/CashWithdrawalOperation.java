@@ -6,7 +6,8 @@ public class CashWithdrawalOperation extends Operation {
     private double amount;
     private String description;
 
-    public CashWithdrawalOperation(final int timestamp, final double amount, final String description) {
+    public CashWithdrawalOperation(final int timestamp, final double amount,
+                                   final String description) {
         super(timestamp);
         this.amount = amount;
         this.description = description;

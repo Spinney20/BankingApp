@@ -12,7 +12,8 @@ import java.util.List;
 public class AddNewBusinessAssociateCommand implements Command {
 
     @Override
-    public void execute(List<User> users, final List<Commerciant> commerciants, CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         String accountIban = command.getAccount();
         String newAssociateEmail = command.getEmail();
         String role = command.getRole();
@@ -52,7 +53,7 @@ public class AddNewBusinessAssociateCommand implements Command {
         System.out.println("Associate added successfully  with reole " + role);
     }
 
-    private User findUserByEmail(List<User> users, String email) {
+    private User findUserByEmail(final List<User> users, final String email) {
         for (User user : users) {
             if (user.getEmail().equals(email)) {
                 return user;
@@ -61,7 +62,7 @@ public class AddNewBusinessAssociateCommand implements Command {
         return null;
     }
 
-    private Account findAccountByIban(String iban, List<User> users) {
+    private Account findAccountByIban(final String iban, final List<User> users) {
         for (User user : users) {
             for (Account account : user.getAccounts()) {
                 if (account.getIban().equals(iban)) {

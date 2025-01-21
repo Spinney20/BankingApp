@@ -12,9 +12,6 @@ import org.poo.data.User;
 import org.poo.fileio.CommandInput;
 import org.poo.operationTypes.CashWithdrawalOperation;
 import org.poo.operationTypes.FailOperation;
-import org.poo.operationTypes.InfoOperation;
-
-import java.sql.SQLOutput;
 import java.util.List;
 
 public class CashWithdrawalCommand implements Command {
@@ -23,18 +20,19 @@ public class CashWithdrawalCommand implements Command {
     private final ObjectMapper objectMapper;
     private final ArrayNode output;
 
-    public CashWithdrawalCommand(final ExchangeRateManager exchangeRateManager, final ObjectMapper objectMapper, final ArrayNode output) {
+    public CashWithdrawalCommand(final ExchangeRateManager exchangeRateManager,
+                                 final ObjectMapper objectMapper, final ArrayNode output) {
         this.exchangeRateManager = exchangeRateManager;
         this.objectMapper = objectMapper;
         this.output = output;
     }
 
     @Override
-    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         String cardNumber = command.getCardNumber();
         String userEmail = command.getEmail();
         double withdrawalAmountRON = command.getAmount(); // Withdrawal amount is in RON
-        String location = command.getLocation();
 
         // Find user and account
         User withdrawingUser = null;
@@ -52,7 +50,9 @@ public class CashWithdrawalCommand implements Command {
                             break;
                         }
                     }
-                    if (withdrawingCard != null) break;
+                    if (withdrawingCard != null) {
+                        break;
+                    }
                 }
                 break;
             }
@@ -80,7 +80,8 @@ public class CashWithdrawalCommand implements Command {
         // Convert total amount to the account's currency if necessary
         double totalAmountInAccountCurrency = totalAmountRON;
         if (!linkedAccount.getCurrency().equalsIgnoreCase("RON")) {
-            double exchangeRate = exchangeRateManager.getExchangeRate("RON", linkedAccount.getCurrency());
+            double exchangeRate
+                    = exchangeRateManager.getExchangeRate("RON", linkedAccount.getCurrency());
             if (exchangeRate != -1) {
                 totalAmountInAccountCurrency = totalAmountRON * exchangeRate;
             } else {
@@ -96,8 +97,10 @@ public class CashWithdrawalCommand implements Command {
         }
 
         // Check minimum balance constraint
-        if (linkedAccount.getBalance() - totalAmountInAccountCurrency < linkedAccount.getMinBalance()) {
-            addFailureToAccount(linkedAccount, command, "Cannot perform payment due to a minimum balance being set");
+        if (linkedAccount.getBalance()
+                - totalAmountInAccountCurrency < linkedAccount.getMinBalance()) {
+            addFailureToAccount(linkedAccount, command,
+                    "Cannot perform payment due to a minimum balance being set");
             return;
         }
 
@@ -117,7 +120,8 @@ public class CashWithdrawalCommand implements Command {
     /**
      * Adds a failure operation to the account.
      */
-    private void addFailureToAccount(Account account, CommandInput command, String description) {
+    private void addFailureToAccount(final Account account, final CommandInput command,
+                                     final String description) {
         if (account != null) {
             FailOperation failOperation = new FailOperation(
                     command.getTimestamp(),
@@ -130,7 +134,7 @@ public class CashWithdrawalCommand implements Command {
     /**
      * Adds an output error to the JSON output array.
      */
-    private void addOutputToJson(String description, int timestamp) {
+    private void addOutputToJson(final String description, final int timestamp) {
         ObjectNode outputNode = objectMapper.createObjectNode();
         outputNode.put("command", "cashWithdrawal");
         ObjectNode outputDetails = objectMapper.createObjectNode();

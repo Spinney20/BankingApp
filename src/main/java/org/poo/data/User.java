@@ -17,7 +17,8 @@ public class User {
     private TransactionService transactionService; // Decorator for cashback and commission logic
 
     // Constructor
-    public User(final String firstName, final String lastName, final String email, final LocalDate birthDate, final String occupation) {
+    public User(final String firstName, final String lastName, final String email,
+                final LocalDate birthDate, final String occupation) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -134,7 +135,7 @@ public class User {
      * @param transactionAmount - the amount of the transaction
      * @return - the commission amount
      */
-    public double applyCommission(double transactionAmount) {
+    public double applyCommission(final double transactionAmount) {
         return transactionService.applyCommission(transactionAmount);
     }
 
@@ -153,15 +154,18 @@ public class User {
 
         // Prevent downgrades
         if ((normalizedCurrentPlan.equals("gold") && !newPlanType.equals("gold"))
-                || (normalizedCurrentPlan.equals("silver") && newPlanType.equals("standard"))) {
+                || (normalizedCurrentPlan.equals("silver")
+                && newPlanType.equals("standard"))) {
             return "You cannot downgrade your plan.";
         }
 
         // Apply upgrade
         switch (newPlanType) {
-            case "silver" -> this.transactionService = new SilverPlanDecorator(transactionService);
+            case "silver" -> this.transactionService
+                    = new SilverPlanDecorator(transactionService);
             case "gold" -> this.transactionService = new GoldPlanDecorator(transactionService);
-            default -> { return "Invalid plan type: " + newPlanType; }
+            default -> { return "Invalid plan type: " + newPlanType;
+            }
         }
         return "Upgrade successful to " + newPlanType + " plan.";
     }

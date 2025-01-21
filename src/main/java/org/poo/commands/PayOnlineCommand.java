@@ -18,8 +18,6 @@ import org.poo.operationTypes.CardPaymentOperation;
 import org.poo.operationTypes.CreateCardOperation;
 import org.poo.operationTypes.DeleteCardOperation;
 import org.poo.operationTypes.FailOperation;
-
-import java.sql.SQLOutput;
 import java.util.List;
 
 import static org.poo.utils.Utils.generateCardNumber;
@@ -38,7 +36,8 @@ public class PayOnlineCommand implements Command {
     }
 
     @Override
-    public void execute(final List<User> users,final List<Commerciant> commerciants, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         User payingUser = null;
 
         // Find the user
@@ -75,7 +74,7 @@ public class PayOnlineCommand implements Command {
                         );
 
                         if (exchangeRateToRON != -1) {
-                            amountInRON = command.getAmount() * exchangeRateToRON; // Convert amount to RON
+                            amountInRON = command.getAmount() * exchangeRateToRON;
                         } else {
                             FailOperation failOperation = new FailOperation(
                                     command.getTimestamp(),
@@ -92,13 +91,15 @@ public class PayOnlineCommand implements Command {
                     // Convert the commission back to the account's currency
                     double commissionInAccountCurrency = commissionInRON;
                     if (!account.getCurrency().equalsIgnoreCase("RON")) {
-                        double exchangeRateToAccountCurrency = exchangeRateManager.getExchangeRate(
+                        double exchangeRateToAccountCurrency
+                                = exchangeRateManager.getExchangeRate(
                                 "RON",
                                 account.getCurrency()
                         );
 
                         if (exchangeRateToAccountCurrency != -1) {
-                            commissionInAccountCurrency = commissionInRON * exchangeRateToAccountCurrency; // Convert back to account currency
+                            commissionInAccountCurrency = commissionInRON
+                                    * exchangeRateToAccountCurrency;
                         } else {
                             FailOperation failOperation = new FailOperation(
                                     command.getTimestamp(),
@@ -111,13 +112,15 @@ public class PayOnlineCommand implements Command {
 
                     double amountInAccountCurrency = command.getAmount();
                     if (!command.getCurrency().equalsIgnoreCase(account.getCurrency())) {
-                        double exchangeRateToAccountCurrency = exchangeRateManager.getExchangeRate(
+                        double exchangeRateToAccountCurrency
+                                = exchangeRateManager.getExchangeRate(
                                 command.getCurrency(),
                                 account.getCurrency()
                         );
 
                         if (exchangeRateToAccountCurrency != -1) {
-                            amountInAccountCurrency = command.getAmount() * exchangeRateToAccountCurrency; // Convert amount to account currency
+                            amountInAccountCurrency
+                                    = command.getAmount() * exchangeRateToAccountCurrency;
                         } else {
                             FailOperation failOperation = new FailOperation(
                                     command.getTimestamp(),
@@ -128,7 +131,8 @@ public class PayOnlineCommand implements Command {
                         }
                     }
 
-                    double totalAmountToDeduct = amountInAccountCurrency + commissionInAccountCurrency;
+                    double totalAmountToDeduct
+                            = amountInAccountCurrency + commissionInAccountCurrency;
 
                     // 1. Check for insufficient funds
                     if (account.getBalance() < totalAmountToDeduct) {
@@ -155,7 +159,8 @@ public class PayOnlineCommand implements Command {
 
                     // Cashback logic
                     double cashback = 0.0;
-                    Commerciant commerciant = Commerciant.getMerchantByName(command.getCommerciant());
+                    Commerciant commerciant
+                            = Commerciant.getMerchantByName(command.getCommerciant());
                     if (commerciant == null) {
                         ObjectNode errorOutput = objectMapper.createObjectNode();
                         errorOutput.put("description", "Merchant not found");
@@ -164,12 +169,14 @@ public class PayOnlineCommand implements Command {
                         return;
                     }
 
-                    Commerciant commerciantForBussiness = Commerciant.getMerchantByName(command.getCommerciant());
+                    Commerciant commerciantForBussiness
+                            = Commerciant.getMerchantByName(command.getCommerciant());
                     if (account.isBusinessAccount()) {
                         BusinessAccount bAcc = (BusinessAccount) account;
                         // if not bAcc.isAssociate(...), we skip
                         if (bAcc.isAssociate(payingUser.getEmail())) {
-                            account.addCommerciantTransaction(commerciantForBussiness.getName(), amountInAccountCurrency, command.getEmail());
+                            account.addCommerciantTransaction(commerciantForBussiness.getName(),
+                                    amountInAccountCurrency, command.getEmail());
                         }
                     }
                     account.addSpent(command.getEmail(), amountInAccountCurrency);
@@ -185,8 +192,11 @@ public class PayOnlineCommand implements Command {
                                 0.0
                         );
                     } else if (commerciant.getCashbackType().equals("spendingThreshold")) {
-                        account.addMerchantSpending(commerciant.getName(), amountInRON); // nu am inteles cerinta, asta e daca se contorizeaza pe merchant
-                        account.incrementTotalSpentOnTresholdCashback(amountInRON); // asta e daca se contorizeaza pe toate spendingurile (o sa vad din teste, sper sa nu uit pe aia gresita)
+                        // nu am inteles cerinta, asta e daca se contorizeaza pe merchant
+                        account.addMerchantSpending(commerciant.getName(), amountInRON);
+                        // asta e daca se contorizeaza pe toate spendingurile (o sa vad din teste,
+                        // sper sa nu uit pe aia gresita)
+                        account.incrementTotalSpentOnTresholdCashback(amountInRON);
                         cashbackStrategy = new SpendingThresholdStrategy(payingUser);
                         cashback = cashbackStrategy.calculateCashback(
                                 command.getAmount(),
@@ -195,9 +205,10 @@ public class PayOnlineCommand implements Command {
                                 account.getTotalSpentOnTresholdCashback()
                         );
 
-                        if(command.getTimestamp() == 261){
+                        if (command.getTimestamp() == 261) {
                             System.out.println("Cashback is: " + cashback);
-                            System.out.println("Total spending is: " + account.getTotalSpentOnTresholdCashback());
+                            System.out.println("Total spending is: "
+                                    + account.getTotalSpentOnTresholdCashback());
                         }
 
                         // Convert cashback to the account's currency

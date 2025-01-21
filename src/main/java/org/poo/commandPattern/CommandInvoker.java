@@ -19,10 +19,11 @@ public class CommandInvoker {
      * @param users - the list of users
      * @param command - the command input
      */
-    public void executeCommand(final String commandType, final List<User> users, final List<Commerciant> commerciants,
+    public void executeCommand(final String commandType, final List<User> users,
+                               final List<Commerciant> commerciants,
                                final CommandInput command) {
         Command cmd = commandFactory.createCommand(commandType);
-        if(cmd == null) {
+        if (cmd == null) {
             return;
         }
         cmd.execute(users, commerciants, command);

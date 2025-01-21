@@ -1,8 +1,4 @@
 package org.poo.operationTypes;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.poo.data.Operation;
@@ -37,13 +33,13 @@ public class SplitCustomPaymentOperation extends Operation {
     // We'll store an optional error message here, if there's insufficient funds
     private String error;                 // e.g. "Account ... has insufficient funds..."
 
-    public SplitCustomPaymentOperation(int timestamp,
-                                       double amount,
-                                       String currency,
-                                       String description,
-                                       List<String> involvedAccounts,
-                                       List<Double> amountForUsers,
-                                       String splitPaymentType) {
+    public SplitCustomPaymentOperation(final int timestamp,
+                                       final double amount,
+                                       final String currency,
+                                       final String description,
+                                       final List<String> involvedAccounts,
+                                       final List<Double> amountForUsers,
+                                       final String splitPaymentType) {
         // The base Operation constructor sets the overall timestamp
         super(timestamp);
         this.timestamp = timestamp;
@@ -67,7 +63,7 @@ public class SplitCustomPaymentOperation extends Operation {
      * the error message in our 'error' field. No need for instanceof checks!
      */
     @Override
-    public void setError(String error) {
+    public void setError(final String error) {
         this.error = error;
     }
 }

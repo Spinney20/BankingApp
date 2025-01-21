@@ -33,7 +33,7 @@ public final class AccountFactory {
             case "savings":
                 return new SavingsAccount(iban, currency, interestRate);
             case "business":
-                return new BusinessAccount(iban, currency, ownerEmail, exchangeRateManager); // Pass ExchangeRateManager
+                return new BusinessAccount(iban, currency, ownerEmail, exchangeRateManager);
             default:
                 throw new IllegalArgumentException("Unknown account type: " + type);
         }

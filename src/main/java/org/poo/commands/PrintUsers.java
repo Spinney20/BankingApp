@@ -31,7 +31,8 @@ public class PrintUsers implements Command {
      * @param command - the command to be executed
      */
     @Override
-    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         ObjectNode commandOutput = objectMapper.createObjectNode();
         ArrayNode usersOutput = objectMapper.createArrayNode();
 
@@ -46,7 +47,8 @@ public class PrintUsers implements Command {
 
                 for (Account account : user.getAccounts()) {
                     if (account.isBusinessAccount()) {
-                        org.poo.accountTypes.BusinessAccount businessAccount = (org.poo.accountTypes.BusinessAccount) account;
+                        org.poo.accountTypes.BusinessAccount businessAccount
+                                = (org.poo.accountTypes.BusinessAccount) account;
 
                         if (!businessAccount.isOwner(user.getEmail())) {
                             continue;

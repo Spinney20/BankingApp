@@ -23,7 +23,8 @@ public class CreateCardCommand implements Command {
      * @param command - the command to be executed
      */
     @Override
-    public void execute(final List<User> users, final List<Commerciant> commerciants, final CommandInput command) {
+    public void execute(final List<User> users, final List<Commerciant> commerciants,
+                        final CommandInput command) {
         boolean cardCreated = false;
 
         // Iterate through users
